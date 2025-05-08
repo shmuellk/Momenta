@@ -1,15 +1,8 @@
 import React from "react";
-import {
-  StyleSheet,
-  TouchableOpacity,
-  Text,
-  Dimensions,
-  View,
-  Image,
-} from "react-native";
+import { StyleSheet, Text, Dimensions, View, I18nManager } from "react-native";
 import LottieView from "lottie-react-native";
-
-const { width } = Dimensions.get("window");
+import Acsess_btn from "../components/acsess_btn";
+const { width, height } = Dimensions.get("window");
 
 const PrevLog = ({ navigation }) => {
   const handlePress = () => {
@@ -25,18 +18,17 @@ const PrevLog = ({ navigation }) => {
           loop
           style={styles.animation}
         />
-        {/* <Image
-        source={require("../assets/name.png")}
-        style={styles.image}
-        resizeMode="contain"
-      /> */}
         <Text style={styles.name}>Momenta</Text>
       </View>
-      <TouchableOpacity style={styles.button} onPress={handlePress}>
-        <View style={styles.buttonContent}>
-          <Text style={styles.buttonText}>קדימה, מתחילים</Text>
-        </View>
-      </TouchableOpacity>
+      <View style={styles.Haders}>
+        <Text style={styles.MainHader}>
+          <Text style={{ color: "#7E57C2" }}>חברים. </Text>
+          <Text style={{ color: "#9575CD" }}>עולמות. </Text>
+          <Text style={{ color: "#B39DDB" }}>חיבורים</Text>
+        </Text>
+        <Text style={styles.SubHader}>רשת אחת שמחברת את כולם</Text>
+      </View>
+      <Acsess_btn text="מתחילים" onPress={handlePress} />
     </View>
   );
 };
@@ -47,36 +39,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
-    alignItems: "center",
     paddingHorizontal: 20,
   },
   animation: {
-    width: width * 1,
-    height: width * 1,
+    width: width,
+    height: width,
   },
   image: {
     width: width * 0.7,
     height: 100,
     marginBottom: 50, // מרווח לפני הכפתור
-  },
-  button: {
-    backgroundColor: "#BDA8DF",
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    justifyContent: "center",
-    width: width * 0.8,
-    height: 60,
-    position: "absolute",
-    bottom: 50,
-  },
-  buttonContent: {
-    alignItems: "center",
-  },
-  buttonText: {
-    fontWeight: "bold",
-    fontSize: 18,
-    color: "white",
   },
   name: {
     fontSize: 50,
@@ -84,8 +56,21 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     color: "#7E57C2",
     alignSelf: "center",
+    bottom: height * 0.06,
+  },
+  Haders: {
+    alignItems: I18nManager.isRTL ? "flex-start" : "flex-end",
+  },
+  MainHader: {
+    fontSize: width * 0.075,
+    fontWeight: "bold",
+  },
+  SubHader: {
+    fontSize: width * 0.06,
+    color: "#D8CCEC",
   },
   intro: {
     marginTop: 100,
+    alignItems: "center",
   },
 });
