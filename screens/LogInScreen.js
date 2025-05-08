@@ -7,6 +7,7 @@ import {
   Button,
   Modal,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import React, { useState } from "react";
 import Input_text from "../components/input";
@@ -28,7 +29,7 @@ const LogInScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.contain}>
+    <ScrollView style={styles.contain}>
       <View style={styles.logo_contain}>
         <Image source={require("../assets/icon.png")} style={styles.image} />
         <Text style={styles.comp_name}>Momenta</Text>
@@ -74,7 +75,7 @@ const LogInScreen = ({ navigation }) => {
           </View>
         </TouchableOpacity>
       </Modal>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -90,8 +91,8 @@ const styles = StyleSheet.create({
     marginTop: height * 0.1,
   },
   image: {
-    height: 120,
-    width: 120,
+    height: 130,
+    width: 130,
     resizeMode: "contain",
   },
   comp_name: {
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
   },
   log_in_block: {
     alignSelf: "center",
-    marginTop: height * 0.1,
+    marginTop: height * 0.08,
   },
   logIn_btn: {
     marginTop: height * 0.05,
@@ -115,8 +116,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   registar: {
-    position: "absolute",
-    bottom: 100,
+    marginTop: height * 0.06, // דוחף כלפי מטה יחסית לגובה המסך
     alignSelf: "center",
   },
 });
