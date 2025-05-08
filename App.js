@@ -14,15 +14,18 @@ export default function App() {
   return (
     <NavigationContainer>
       <StatusBar translucent backgroundColor="transparent" style="dark" />
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        screenOptions={{ headerShown: false }}
+        initialRouteName="PrevLog"
+      >
         <Stack.Screen name="PrevLog" component={PrevLog} />
         <Stack.Screen name="LogInScreen" component={LogInScreen} />
+        <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+        <Stack.Screen name="MainScreen" component={MainScreen} />
         <Stack.Screen
           name="VerificationScreen"
           component={VerificationScreen}
         />
-        <Stack.Screen name="MainScreen" component={MainScreen} />
-        <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
