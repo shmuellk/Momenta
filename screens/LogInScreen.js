@@ -31,7 +31,7 @@ const LogInScreen = ({ navigation }) => {
   return (
     <ScrollView style={styles.contain}>
       <View style={styles.logo_contain}>
-        <Image source={require("../assets/icon.png")} style={styles.image} />
+        <Image source={require("../assets/Logo.png")} style={styles.image} />
         <Text style={styles.comp_name}>Momenta</Text>
       </View>
       <View style={styles.log_in_block}>
