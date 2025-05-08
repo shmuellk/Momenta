@@ -6,6 +6,7 @@ import PrevLog from "./screens/PrevLog";
 import LogInScreen from "./screens/LogInScreen";
 import VerificationScreen from "./screens/VerificationScreen";
 import MainScreen from "./screens/MainScreen";
+import RegisterScreen from "./screens/RegisterScreen";
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -21,6 +22,7 @@ export default function App() {
           component={VerificationScreen}
         />
         <Stack.Screen name="MainScreen" component={MainScreen} />
+        <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

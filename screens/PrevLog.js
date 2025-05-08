@@ -28,7 +28,9 @@ const PrevLog = ({ navigation }) => {
         </Text>
         <Text style={styles.SubHader}>רשת אחת שמחברת את כולם</Text>
       </View>
-      <Acsess_btn text="מתחילים" onPress={handlePress} />
+      <View style={styles.btn_contain}>
+        <Acsess_btn text="מתחילים" onPress={handlePress} color="#BDA8DF" />
+      </View>
     </View>
   );
 };
@@ -72,5 +74,10 @@ const styles = StyleSheet.create({
   intro: {
     marginTop: 100,
     alignItems: "center",
+  },
+  btn_contain: {
+    position: "absolute",
+    bottom: 50,
+    alignSelf: "center",
   },
 });
