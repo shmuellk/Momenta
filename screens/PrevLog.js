@@ -13,7 +13,7 @@ const PrevLog = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.intro}>
         <LottieView
-          source={require("../assets/Messaging.json")}
+          source={require("../assets/intro.json")}
           autoPlay
           loop
           style={styles.animation}
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   animation: {
-    width: width,
+    width: width * 2,
     height: width,
   },
   image: {
