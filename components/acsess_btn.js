@@ -25,7 +25,7 @@ export default Acsess_btn;
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 10,
+    borderRadius: 99,
     paddingVertical: 10,
     paddingHorizontal: 20,
     justifyContent: "center",

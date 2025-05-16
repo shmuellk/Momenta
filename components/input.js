@@ -5,12 +5,21 @@ import {
   View,
   Dimensions,
   TouchableOpacity,
+  I18nManager,
 } from "react-native";
 import React, { useState } from "react";
 const { width, height } = Dimensions.get("window");
 import Icon from "react-native-vector-icons/AntDesign";
 
-const Input_text = ({ placeholder, isPassword = false, onChange }) => {
+const Input_text = ({
+  placeholder,
+  isPassword = false,
+  onChangeText,
+  ref,
+  onSubmitEditing,
+  returnKeyType,
+  icon,
+}) => {
   const [hide_pass, setHide_pass] = useState(isPassword);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -25,7 +34,7 @@ const Input_text = ({ placeholder, isPassword = false, onChange }) => {
       ]}
     >
       <Icon
-        name={isPassword ? "lock" : "user"}
+        name={icon}
         size={height * 0.03}
         color={isFocused ? "#7E57C2" : "grey"}
         style={styles.icon}
@@ -34,10 +43,12 @@ const Input_text = ({ placeholder, isPassword = false, onChange }) => {
         style={styles.textInput}
         placeholder={placeholder}
         secureTextEntry={hide_pass}
-        keyboardType={placeholder === "email" ? "email-address" : "default"}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        onChange={onChange}
+        onChangeText={onChangeText}
+        ref={ref}
+        onSubmitEditing={onSubmitEditing}
+        returnKeyType={returnKeyType}
       />
       {isPassword && (
         <TouchableOpacity
@@ -66,7 +77,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: width * 0.7,
     height: height * 0.07,
-    flexDirection: "row",
+    flexDirection: I18nManager.isRTL ? "row-reverse" : "row",
     alignItems: "center",
     paddingHorizontal: 10,
   },

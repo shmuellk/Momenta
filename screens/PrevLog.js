@@ -13,7 +13,7 @@ const PrevLog = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.intro}>
         <LottieView
-          source={require("../assets/intro.json")}
+          source={require("../assets/Messaging.json")}
           autoPlay
           loop
           style={styles.animation}
