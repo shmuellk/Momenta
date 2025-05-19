@@ -8,12 +8,14 @@ import {
   Dimensions,
   BackHandler,
   Platform,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  ScrollView,
 } from "react-native";
 
 import AccountInfo from "./AccountInfo";
 import LogInInfo from "./LogInInfo";
 import VerificationScreen from "./VerificationScreen";
-import Acsess_btn from "../components/acsess_btn";
 
 const { width, height } = Dimensions.get("window");
 const STEPS = ["1", "2", "3"];
@@ -22,9 +24,16 @@ const COLORS = ["#B39DDB", "#9575CD", "#7E57C2"];
 export default function RegistrationFlow({ navigation }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [currentStepColor, setCurrentStepColor] = useState(COLORS[0]);
+  const [userData, setUserData] = useState({
+    fullname: "",
+    Username: "",
+    Phone: "",
+    email: "",
+    password: "",
+  });
   const progressAnim = useRef(new Animated.Value(0)).current;
 
-  // אנימציית הפס
+  // Animate the progress bar and update its color
   useEffect(() => {
     Animated.timing(progressAnim, {
       toValue: currentStep / (STEPS.length - 1),
@@ -32,25 +41,25 @@ export default function RegistrationFlow({ navigation }) {
       useNativeDriver: false,
     }).start();
 
-    // עדכון הצבע אחרי האנימציה
     setCurrentStepColor(COLORS[currentStep]);
   }, [currentStep]);
 
-  // טיפול בכפתור Back הפיזי (Android)
+  // Handle Android hardware back button
   useEffect(() => {
     const onBackPress = () => {
       if (currentStep > 0) {
         setCurrentStep((s) => s - 1);
-        return true; // עצרנו את ברירת המחדל – לא לצאת מהמסך
+        return true; // We've handled it
       }
-      // אם currentStep === 0, מחזירים false כדי שהניווט החיצוני יטפל בחזרה
-      return false;
+      return false; // Let the system handle it (navigate back)
     };
 
     if (Platform.OS === "android") {
-      BackHandler.addEventListener("hardwareBackPress", onBackPress);
-      return () =>
-        BackHandler.removeEventListener("hardwareBackPress", onBackPress);
+      const backSub = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+      return () => backSub.remove();
     }
   }, [currentStep]);
 
@@ -60,75 +69,109 @@ export default function RegistrationFlow({ navigation }) {
     outputRange: [0, STEP_BAR_WIDTH],
   });
 
-  return (
-    <View style={styles.container}>
-      {/* לוגו ושם */}
-      <View style={styles.logo_contain}>
-        <Image source={require("../assets/Logo.png")} style={styles.image} />
-        <Text style={styles.comp_name}>Momenta</Text>
-      </View>
+  const handleChange = (filde, val) =>
+    setUserData((prev) => ({ ...prev, [filde]: val }));
 
-      {/* Step Indicator */}
-      <View
-        style={[
-          styles.stepContainer,
-          { width: STEP_BAR_WIDTH, alignSelf: "center" },
-        ]}
+  const FirstNext = () => setCurrentStep((s) => s + 1);
+  const SecondNext = () => setCurrentStep((s) => s + 1);
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <View style={styles.track} />
-        <Animated.View
-          style={[
-            styles.progress,
-            { width: progressBarWidth, backgroundColor: currentStepColor },
-          ]}
-        />
-        {STEPS.map((label, idx) => {
-          const left = (STEP_BAR_WIDTH / (STEPS.length - 1)) * idx;
-          const isActive = idx === currentStep;
-          return (
+        <ScrollView style={styles.contain}>
+          <View style={styles.container}>
+            {/* Logo and title */}
+            <View style={styles.logo_contain}>
+              <Image
+                source={require("../assets/Logo.png")}
+                style={styles.image}
+              />
+              <Text style={styles.comp_name}>Momenta</Text>
+            </View>
+
+            {/* Step indicator centered */}
             <View
-              key={idx}
               style={[
-                styles.circle,
-                { left },
-                isActive && { borderColor: currentStepColor },
+                styles.stepContainer,
+                { width: STEP_BAR_WIDTH, alignSelf: "center" },
               ]}
             >
-              <Text
+              <View style={styles.track} />
+              <Animated.View
                 style={[
-                  styles.circleLabel,
-                  isActive && { color: currentStepColor },
+                  styles.progress,
+                  {
+                    width: progressBarWidth,
+                    backgroundColor: currentStepColor,
+                  },
                 ]}
-              >
-                {label}
-              </Text>
+              />
+              {STEPS.map((label, idx) => {
+                const left = (STEP_BAR_WIDTH / (STEPS.length - 1)) * idx;
+                const isActive = idx === currentStep;
+                return (
+                  <View
+                    key={idx}
+                    style={[
+                      styles.circle,
+                      { left },
+                      isActive && { borderColor: currentStepColor },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.circleLabel,
+                        isActive && { color: currentStepColor },
+                      ]}
+                    >
+                      {label}
+                    </Text>
+                  </View>
+                );
+              })}
             </View>
-          );
-        })}
-      </View>
 
-      {/* תוכן השלבים */}
-      <View style={styles.stepContent}>
-        {currentStep === 0 && <AccountInfo />}
-        {currentStep === 1 && <LogInInfo />}
-        {currentStep === 2 && <VerificationScreen />}
-      </View>
-
-      {/* כפתור "הבא" (כפי שהיה) */}
-      <View style={styles.nextButton}>
-        <Acsess_btn
-          text="הבא"
-          onPress={() =>
-            setCurrentStep((s) => Math.min(s + 1, STEPS.length - 1))
-          }
-          color={currentStepColor}
-        />
-      </View>
-    </View>
+            {/* Step content */}
+            <View style={styles.stepContent}>
+              {currentStep === 0 && (
+                <AccountInfo
+                  onPress={FirstNext}
+                  color={currentStepColor}
+                  text="הבא"
+                  handleChange={handleChange}
+                />
+              )}
+              {currentStep === 1 && (
+                <LogInInfo
+                  onPress={SecondNext}
+                  color={currentStepColor}
+                  text="הבא"
+                  handleChange={handleChange}
+                />
+              )}
+              {currentStep === 2 && (
+                <VerificationScreen
+                  onPress={() => setCurrentStep((s) => s + 1)}
+                  color={currentStepColor}
+                  text="הבא"
+                />
+              )}
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  contain: {
+    flex: 1,
+    backgroundColor: "white",
+    paddingHorizontal: 20,
+  },
   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
   logo_contain: {
     alignSelf: "center",
@@ -182,11 +225,6 @@ const styles = StyleSheet.create({
   },
   stepContent: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
-  },
-  nextButton: {
-    alignSelf: "center",
-    marginBottom: 20,
   },
 });

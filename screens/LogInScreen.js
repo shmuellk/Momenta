@@ -8,6 +8,9 @@ import {
   TouchableOpacity,
   ScrollView,
   I18nManager,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import React, { useState, useRef } from "react";
 import Input_text from "../components/input";
@@ -35,66 +38,80 @@ const LogInScreen = ({ navigation }) => {
   };
 
   return (
-    <ScrollView style={styles.contain}>
-      <View style={styles.logo_contain}>
-        <Image source={require("../assets/Logo.png")} style={styles.image} />
-        <Text style={styles.comp_name}>Momenta</Text>
-      </View>
-      <View style={styles.log_in_block}>
-        <Input_text
-          placeholder="email"
-          onChangeText={(val) => setEmail(val)}
-          returnKeyType="next"
-          onSubmitEditing={() => passwordRef.current?.focus()}
-          icon="user"
-        />
-        <Input_text
-          placeholder="password"
-          isPassword={true}
-          onChangeText={(val) => setPassword(val)}
-          ref={passwordRef}
-          icon="lock"
-          onSubmitEditing={LogIn}
-        />
-        {error && <Text style={styles.error}>שם משתמש או סיסמא שגויים</Text>}
-      </View>
-      <View style={styles.Link_contain}>
-        <Link_text
-          text="שחכתי סיסמא ?"
-          color="#9575CD"
-          onPress={() => setPopUp(true)}
-        />
-      </View>
-      <View style={styles.logIn_btn}>
-        <Acsess_btn text="התחברות" onPress={LogIn} color="#7E57C2" />
-      </View>
-
-      <View style={styles.registar_contain}>
-        <Text style={styles.registar_text}>חסר לך Momenta בחיים? </Text>
-        <Link_text
-          text="הצטרפו עכשיו"
-          color="#9575CD"
-          onPress={() => navigation.navigate("RegisterScreen")}
-        />
-      </View>
-
-      <Modal
-        visible={popUp}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setPopUp(false)}
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <TouchableOpacity
-          style={popStyles.modalBackground}
-          activeOpacity={1}
-          onPressOut={() => setPopUp(false)}
-        >
-          <View style={popStyles.modalContent}>
-            <Text style={popStyles.text}>שלחנו לך מייל לאיפוס הסיסמה ✉️</Text>
+        <ScrollView style={styles.contain}>
+          <View style={styles.logo_contain}>
+            <Image
+              source={require("../assets/Logo.png")}
+              style={styles.image}
+            />
+            <Text style={styles.comp_name}>Momenta</Text>
           </View>
-        </TouchableOpacity>
-      </Modal>
-    </ScrollView>
+          <View style={styles.log_in_block}>
+            <Input_text
+              placeholder="email"
+              onChangeText={(val) => setEmail(val)}
+              returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
+              icon="user"
+            />
+            <Input_text
+              placeholder="password"
+              isPassword={true}
+              onChangeText={(val) => setPassword(val)}
+              ref={passwordRef}
+              icon="lock"
+              onSubmitEditing={LogIn}
+            />
+            {error && (
+              <Text style={styles.error}>שם משתמש או סיסמא שגויים</Text>
+            )}
+          </View>
+          <View style={styles.Link_contain}>
+            <Link_text
+              text="שחכתי סיסמא ?"
+              color="#9575CD"
+              onPress={() => setPopUp(true)}
+            />
+          </View>
+          <View style={styles.logIn_btn}>
+            <Acsess_btn text="התחברות" onPress={LogIn} color="#7E57C2" />
+          </View>
+
+          <View style={styles.registar_contain}>
+            <Text style={styles.registar_text}>חסר לך Momenta בחיים? </Text>
+            <Link_text
+              text="הצטרפו עכשיו"
+              color="#9575CD"
+              onPress={() => navigation.navigate("RegisterScreen")}
+            />
+          </View>
+
+          <Modal
+            visible={popUp}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setPopUp(false)}
+          >
+            <TouchableOpacity
+              style={popStyles.modalBackground}
+              activeOpacity={1}
+              onPressOut={() => setPopUp(false)}
+            >
+              <View style={popStyles.modalContent}>
+                <Text style={popStyles.text}>
+                  שלחנו לך מייל לאיפוס הסיסמה ✉️
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </Modal>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

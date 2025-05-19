@@ -19,49 +19,81 @@ const Input_text = ({
   onSubmitEditing,
   returnKeyType,
   icon,
+  required = false,
 }) => {
+  const [value, setValue] = useState("");
   const [hide_pass, setHide_pass] = useState(isPassword);
   const [isFocused, setIsFocused] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handleChange = (text) => {
+    setValue(text);
+    onChangeText(text);
+    // אם הדרישה מופעלת ונכתבו תווים – מסירים את השגיאה
+    if (required && text.trim() !== "") {
+      setError(false);
+    }
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    // לבדוק רק אם מצוין required
+    if (required && value.trim() === "") {
+      setError(true);
+    }
+  };
 
   return (
-    <View
-      style={[
-        styles.inputContainer,
-        {
-          borderColor: isFocused ? "#7E57C2" : "#ccc",
-          borderWidth: isFocused ? 2 : 1,
-        },
-      ]}
-    >
-      <Icon
-        name={icon}
-        size={height * 0.03}
-        color={isFocused ? "#7E57C2" : "grey"}
-        style={styles.icon}
-      />
-      <TextInput
-        style={styles.textInput}
-        placeholder={placeholder}
-        secureTextEntry={hide_pass}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        onChangeText={onChangeText}
-        ref={ref}
-        onSubmitEditing={onSubmitEditing}
-        returnKeyType={returnKeyType}
-      />
-      {isPassword && (
-        <TouchableOpacity
-          onPress={() => setHide_pass(!hide_pass)}
-          style={styles.eye}
-        >
-          <Icon
-            name={hide_pass ? "eyeo" : "eye"}
-            size={height * 0.03}
-            color={"grey"}
-            style={styles.icon}
-          />
-        </TouchableOpacity>
+    <View style={{ marginVertical: 10 }}>
+      <View
+        style={[
+          styles.inputContainer,
+          {
+            borderColor: isFocused ? "#7E57C2" : "#ccc",
+            borderWidth: isFocused ? 2 : 1,
+          },
+        ]}
+      >
+        <Icon
+          name={icon}
+          size={height * 0.03}
+          color={isFocused ? "#7E57C2" : "grey"}
+          style={styles.icon}
+        />
+        <TextInput
+          style={styles.textInput}
+          placeholder={placeholder}
+          secureTextEntry={hide_pass}
+          onFocus={() => {
+            setIsFocused(true);
+            // אם מתחילים להקליד – נסיר שגיאה אם קיים
+            if (required) setError(false);
+          }}
+          onBlur={handleBlur}
+          onChangeText={handleChange}
+          ref={ref}
+          onSubmitEditing={onSubmitEditing}
+          returnKeyType={returnKeyType}
+        />
+        {isPassword && (
+          <TouchableOpacity
+            onPress={() => setHide_pass(!hide_pass)}
+            style={styles.eye}
+          >
+            <Icon
+              name={hide_pass ? "eyeo" : "eye"}
+              size={height * 0.03}
+              color={"grey"}
+              style={styles.icon}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>required</Text>
+        </View>
       )}
     </View>
   );
@@ -71,9 +103,6 @@ export default Input_text;
 
 const styles = StyleSheet.create({
   inputContainer: {
-    marginVertical: 10,
-    borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 5,
     width: width * 0.7,
     height: height * 0.07,
@@ -85,11 +114,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   textInput: {
-    flex: 1, // הכי חשוב!
+    flex: 1,
     fontSize: 16,
     paddingHorizontal: 10,
   },
   eye: {
     paddingHorizontal: 5,
+  },
+  errorContainer: {
+    alignSelf: "flex-start",
+    marginTop: 4,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "red",
+    borderRadius: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 12,
   },
 });

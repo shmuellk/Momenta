@@ -8,11 +8,12 @@ import {
 import React from "react";
 const { width, height } = Dimensions.get("window");
 
-const Acsess_btn = ({ text, onPress, color }) => {
+const Acsess_btn = ({ text, onPress, color, disabled = false }) => {
   return (
     <TouchableOpacity
       style={[styles.button, { backgroundColor: color }]}
       onPress={onPress}
+      disabled={disabled}
     >
       <View style={styles.buttonContent}>
         <Text style={styles.buttonText}>{text}</Text>
