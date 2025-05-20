@@ -13,7 +13,7 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <StatusBar translucent backgroundColor="transparent" style="dark" />
+      <StatusBar translucent style="dark" />
       <Stack.Navigator
         screenOptions={{ headerShown: false }}
         initialRouteName="PrevLog"

@@ -1,9 +1,9 @@
-import { StyleSheet, Text, View } from "react-native";
-import React, { useRef, useState } from "react";
+import { StyleSheet, View } from "react-native";
+import React, { useRef } from "react";
 import Input_text from "../components/input";
 import Acsess_btn from "../components/acsess_btn";
 
-const AccountInfo = ({ text, onPress, color, handleChange }) => {
+const AccountInfo = ({ text, onPress, color, handleChange, userData }) => {
   const UsernameRef = useRef();
   const PhoneRef = useRef();
 
@@ -12,25 +12,32 @@ const AccountInfo = ({ text, onPress, color, handleChange }) => {
       <View style={styles.inputsContain}>
         <Input_text
           placeholder="Full Name"
+          val={userData.fullname}
           onChangeText={(val) => handleChange("fullname", val)}
           onSubmitEditing={() => UsernameRef.current?.focus()}
           returnKeyType="next"
           icon="contacts"
+          required={true}
         />
         <Input_text
           placeholder="Username"
-          onChangeText={(val) => handleChange("username", val)}
+          val={userData.Username}
+          onChangeText={(val) => handleChange("Username", val)}
           ref={UsernameRef}
           onSubmitEditing={() => PhoneRef.current?.focus()}
           returnKeyType="next"
           icon="user"
+          required={true}
         />
         <Input_text
           placeholder="Phone Number"
-          onChangeText={(val) => handleChange("phone", val)}
+          val={userData.Phone}
+          onChangeText={(val) => handleChange("Phone", val)}
           ref={PhoneRef}
           onSubmitEditing={onPress}
           icon="phone"
+          required={true}
+          keyboardType="number-pad"
         />
       </View>
       <View style={styles.nextButton}>

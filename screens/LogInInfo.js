@@ -4,8 +4,7 @@ import { View, Text, StyleSheet } from "react-native";
 import Input_text from "../components/input";
 import Acsess_btn from "../components/acsess_btn";
 
-const LogInInfo = ({ text, onPress, color, handleChange }) => {
-  const [pass, setPass] = useState("");
+const LogInInfo = ({ text, onPress, color, handleChange, userData }) => {
   const [error, setError] = useState(false);
   const PasswordRef = useRef();
   const RepassRef = useRef();
@@ -20,6 +19,8 @@ const LogInInfo = ({ text, onPress, color, handleChange }) => {
           onSubmitEditing={() => PasswordRef.current?.focus()}
           returnKeyType="next"
           icon="mail"
+          required={true}
+          val={userData.email}
         />
 
         {/* Password field */}
@@ -27,7 +28,7 @@ const LogInInfo = ({ text, onPress, color, handleChange }) => {
           placeholder="Password"
           secureTextEntry
           onChangeText={(val) => {
-            setPass(val);
+            handleChange("pass", val);
             setError(false); // reset error when user retypes
           }}
           ref={PasswordRef}
@@ -35,6 +36,8 @@ const LogInInfo = ({ text, onPress, color, handleChange }) => {
           returnKeyType="next"
           icon="lock"
           isPassword={true}
+          required={true}
+          val={userData.pass}
         />
 
         {/* Confirm password */}
@@ -42,8 +45,9 @@ const LogInInfo = ({ text, onPress, color, handleChange }) => {
           placeholder="Confirm Password"
           secureTextEntry
           onChangeText={(val) => {
-            if (val === pass) {
-              handleChange("password", val);
+            handleChange("rePass", val);
+            if (val === userData.pass) {
+              handleChange("password", val); // עדכון הסיסמה הסופית
               setError(false);
             } else {
               setError(true);
@@ -54,18 +58,15 @@ const LogInInfo = ({ text, onPress, color, handleChange }) => {
           returnKeyType="done"
           icon="lock"
           isPassword={true}
+          required={true}
+          val={userData.rePass}
         />
 
         {error && <Text style={styles.errorText}>הסיסמאות לא תואמות</Text>}
       </View>
 
       <View style={styles.nextButton}>
-        <Acsess_btn
-          text={text}
-          color={color}
-          onPress={onPress}
-          disabled={error} // optional: disable button until match
-        />
+        <Acsess_btn text={text} color={color} onPress={onPress} />
       </View>
     </View>
   );

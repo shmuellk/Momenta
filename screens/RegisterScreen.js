@@ -30,10 +30,11 @@ export default function RegistrationFlow({ navigation }) {
     Phone: "",
     email: "",
     password: "",
+    pass: "", // סיסמה זמנית
+    rePass: "", // אישור סיסמה זמני
   });
   const progressAnim = useRef(new Animated.Value(0)).current;
 
-  // Animate the progress bar and update its color
   useEffect(() => {
     Animated.timing(progressAnim, {
       toValue: currentStep / (STEPS.length - 1),
@@ -44,14 +45,13 @@ export default function RegistrationFlow({ navigation }) {
     setCurrentStepColor(COLORS[currentStep]);
   }, [currentStep]);
 
-  // Handle Android hardware back button
   useEffect(() => {
     const onBackPress = () => {
       if (currentStep > 0) {
         setCurrentStep((s) => s - 1);
-        return true; // We've handled it
+        return true;
       }
-      return false; // Let the system handle it (navigate back)
+      return false;
     };
 
     if (Platform.OS === "android") {
@@ -69,11 +69,26 @@ export default function RegistrationFlow({ navigation }) {
     outputRange: [0, STEP_BAR_WIDTH],
   });
 
-  const handleChange = (filde, val) =>
-    setUserData((prev) => ({ ...prev, [filde]: val }));
+  const handleChange = (field, val) => {
+    setUserData((prev) => ({ ...prev, [field]: val }));
+  };
 
-  const FirstNext = () => setCurrentStep((s) => s + 1);
-  const SecondNext = () => setCurrentStep((s) => s + 1);
+  const FirstNext = () => {
+    if (
+      userData.fullname !== "" &&
+      userData.Username !== "" &&
+      userData.Phone !== ""
+    ) {
+      setCurrentStep((s) => s + 1);
+    }
+  };
+
+  const SecondNext = () => {
+    if (userData.email !== "" && userData.password !== "") {
+      setCurrentStep((s) => s + 1);
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <KeyboardAvoidingView
@@ -82,7 +97,6 @@ export default function RegistrationFlow({ navigation }) {
       >
         <ScrollView style={styles.contain}>
           <View style={styles.container}>
-            {/* Logo and title */}
             <View style={styles.logo_contain}>
               <Image
                 source={require("../assets/Logo.png")}
@@ -91,7 +105,6 @@ export default function RegistrationFlow({ navigation }) {
               <Text style={styles.comp_name}>Momenta</Text>
             </View>
 
-            {/* Step indicator centered */}
             <View
               style={[
                 styles.stepContainer,
@@ -133,7 +146,6 @@ export default function RegistrationFlow({ navigation }) {
               })}
             </View>
 
-            {/* Step content */}
             <View style={styles.stepContent}>
               {currentStep === 0 && (
                 <AccountInfo
@@ -141,6 +153,7 @@ export default function RegistrationFlow({ navigation }) {
                   color={currentStepColor}
                   text="הבא"
                   handleChange={handleChange}
+                  userData={userData}
                 />
               )}
               {currentStep === 1 && (
@@ -149,6 +162,7 @@ export default function RegistrationFlow({ navigation }) {
                   color={currentStepColor}
                   text="הבא"
                   handleChange={handleChange}
+                  userData={userData}
                 />
               )}
               {currentStep === 2 && (

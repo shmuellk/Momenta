@@ -20,6 +20,8 @@ const Input_text = ({
   returnKeyType,
   icon,
   required = false,
+  keyboardType = "default",
+  val,
 }) => {
   const [value, setValue] = useState("");
   const [hide_pass, setHide_pass] = useState(isPassword);
@@ -74,6 +76,8 @@ const Input_text = ({
           ref={ref}
           onSubmitEditing={onSubmitEditing}
           returnKeyType={returnKeyType}
+          keyboardType={keyboardType}
+          value={val}
         />
         {isPassword && (
           <TouchableOpacity
