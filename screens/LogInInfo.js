@@ -1,72 +1,125 @@
 // LogInInfo.js
 import React, { useRef, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, I18nManager, Dimensions } from "react-native";
 import Input_text from "../components/input";
 import Acsess_btn from "../components/acsess_btn";
+const { width, height } = Dimensions.get("window");
 
-const LogInInfo = ({ text, onPress, color, handleChange, userData }) => {
-  const [error, setError] = useState(false);
+const isValidEmail = (email) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+};
+
+const LogInInfo = ({ text, onPress, color, handleChange, userData = {} }) => {
   const PasswordRef = useRef();
   const RepassRef = useRef();
+
+  const [errors, setErrors] = useState({
+    emailEmpty: false,
+    emailFormat: false,
+    passEmpty: false,
+    rePassEmpty: false,
+    match: false,
+  });
+
+  const validateAndNext = () => {
+    const emailVal = (userData.email || "").trim();
+    const passVal = (userData.pass || "").trim();
+    const rePassVal = (userData.rePass || "").trim();
+
+    const newErr = {
+      emailEmpty: emailVal === "",
+      emailFormat: emailVal !== "" && !isValidEmail(emailVal),
+      passEmpty: passVal === "",
+      rePassEmpty: rePassVal === "",
+      match: passVal !== "" && rePassVal !== "" && passVal !== rePassVal,
+    };
+    setErrors(newErr);
+
+    if (
+      !newErr.emailEmpty &&
+      !newErr.emailFormat &&
+      !newErr.passEmpty &&
+      !newErr.rePassEmpty &&
+      !newErr.match
+    ) {
+      handleChange("password", passVal); // עדכון סיסמה סופית
+      onPress();
+    }
+  };
 
   return (
     <View>
       <View style={styles.inputsContain}>
-        {/* Email field */}
+        {/* Email */}
         <Input_text
           placeholder="Email"
-          onChangeText={(val) => handleChange("email", val)}
+          val={userData.email || ""}
+          onChangeText={(val) => {
+            handleChange("email", val);
+            setErrors((e) => ({
+              ...e,
+              emailEmpty: val.trim() === "",
+              emailFormat: val.trim() !== "" && !isValidEmail(val),
+            }));
+          }}
           onSubmitEditing={() => PasswordRef.current?.focus()}
           returnKeyType="next"
           icon="mail"
-          required={true}
-          val={userData.email}
         />
+        {errors.emailEmpty && (
+          <Text style={styles.error}>יש למלא כתובת אימייל</Text>
+        )}
+        {!errors.emailEmpty && errors.emailFormat && (
+          <Text style={styles.error}>כתובת המייל אינה תקינה</Text>
+        )}
 
-        {/* Password field */}
+        {/* Password */}
         <Input_text
           placeholder="Password"
-          secureTextEntry
+          isPassword
+          val={userData.pass || ""}
           onChangeText={(val) => {
             handleChange("pass", val);
-            setError(false); // reset error when user retypes
+            setErrors((e) => ({
+              ...e,
+              passEmpty: val.trim() === "",
+              match: false,
+            }));
           }}
           ref={PasswordRef}
           onSubmitEditing={() => RepassRef.current?.focus()}
           returnKeyType="next"
           icon="lock"
-          isPassword={true}
-          required={true}
-          val={userData.pass}
         />
+        {errors.passEmpty && <Text style={styles.error}>יש למלא סיסמה</Text>}
 
-        {/* Confirm password */}
+        {/* Confirm Password */}
         <Input_text
           placeholder="Confirm Password"
-          secureTextEntry
+          isPassword
+          val={userData.rePass || ""}
           onChangeText={(val) => {
             handleChange("rePass", val);
-            if (val === userData.pass) {
-              handleChange("password", val); // עדכון הסיסמה הסופית
-              setError(false);
-            } else {
-              setError(true);
-            }
+            setErrors((e) => ({
+              ...e,
+              rePassEmpty: val.trim() === "",
+              match: e.passEmpty === false && val !== (userData.pass || ""),
+            }));
           }}
           ref={RepassRef}
-          onSubmitEditing={onPress}
+          onSubmitEditing={validateAndNext}
           returnKeyType="done"
           icon="lock"
-          isPassword={true}
-          required={true}
-          val={userData.rePass}
         />
-
-        {error && <Text style={styles.errorText}>הסיסמאות לא תואמות</Text>}
+        {errors.rePassEmpty && <Text style={styles.error}>יש לאשר סיסמה</Text>}
+        {!errors.rePassEmpty && errors.match && (
+          <Text style={styles.error}>הסיסמאות לא תואמות</Text>
+        )}
       </View>
 
       <View style={styles.nextButton}>
-        <Acsess_btn text={text} color={color} onPress={onPress} />
+        <Acsess_btn text={text} color={color} onPress={validateAndNext} />
       </View>
     </View>
   );
@@ -82,8 +135,9 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: 30,
   },
-  errorText: {
+  error: {
     color: "red",
-    marginTop: 8,
+    alignSelf: I18nManager.isRTL ? "flex-start" : "flex-end",
+    marginHorizontal: width * 0.05,
   },
 });

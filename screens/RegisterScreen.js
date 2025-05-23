@@ -30,8 +30,8 @@ export default function RegistrationFlow({ navigation }) {
     Phone: "",
     email: "",
     password: "",
-    pass: "", // סיסמה זמנית
-    rePass: "", // אישור סיסמה זמני
+    pass: "", // temporary
+    rePass: "", // temporary
   });
   const progressAnim = useRef(new Animated.Value(0)).current;
 
@@ -41,7 +41,6 @@ export default function RegistrationFlow({ navigation }) {
       duration: 300,
       useNativeDriver: false,
     }).start();
-
     setCurrentStepColor(COLORS[currentStep]);
   }, [currentStep]);
 
@@ -71,22 +70,6 @@ export default function RegistrationFlow({ navigation }) {
 
   const handleChange = (field, val) => {
     setUserData((prev) => ({ ...prev, [field]: val }));
-  };
-
-  const FirstNext = () => {
-    if (
-      userData.fullname !== "" &&
-      userData.Username !== "" &&
-      userData.Phone !== ""
-    ) {
-      setCurrentStep((s) => s + 1);
-    }
-  };
-
-  const SecondNext = () => {
-    if (userData.email !== "" && userData.password !== "") {
-      setCurrentStep((s) => s + 1);
-    }
   };
 
   return (
@@ -149,7 +132,7 @@ export default function RegistrationFlow({ navigation }) {
             <View style={styles.stepContent}>
               {currentStep === 0 && (
                 <AccountInfo
-                  onPress={FirstNext}
+                  onPress={() => setCurrentStep((s) => s + 1)}
                   color={currentStepColor}
                   text="הבא"
                   handleChange={handleChange}
@@ -158,7 +141,7 @@ export default function RegistrationFlow({ navigation }) {
               )}
               {currentStep === 1 && (
                 <LogInInfo
-                  onPress={SecondNext}
+                  onPress={() => setCurrentStep((s) => s + 1)}
                   color={currentStepColor}
                   text="הבא"
                   handleChange={handleChange}
@@ -167,7 +150,9 @@ export default function RegistrationFlow({ navigation }) {
               )}
               {currentStep === 2 && (
                 <VerificationScreen
-                  onPress={() => setCurrentStep((s) => s + 1)}
+                  onPress={() => {
+                    /* final submit */
+                  }}
                   color={currentStepColor}
                   text="הבא"
                 />

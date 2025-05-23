@@ -1,3 +1,5 @@
+// Input_text.js
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -7,101 +9,101 @@ import {
   TouchableOpacity,
   I18nManager,
 } from "react-native";
-import React, { useState } from "react";
-const { width, height } = Dimensions.get("window");
 import Icon from "react-native-vector-icons/AntDesign";
 
-const Input_text = ({
-  placeholder,
-  isPassword = false,
-  onChangeText,
-  ref,
-  onSubmitEditing,
-  returnKeyType,
-  icon,
-  required = false,
-  keyboardType = "default",
-  val,
-}) => {
-  const [value, setValue] = useState("");
-  const [hide_pass, setHide_pass] = useState(isPassword);
-  const [isFocused, setIsFocused] = useState(false);
-  const [error, setError] = useState(false);
+const { width, height } = Dimensions.get("window");
 
-  const handleChange = (text) => {
-    setValue(text);
-    onChangeText(text);
-    // אם הדרישה מופעלת ונכתבו תווים – מסירים את השגיאה
-    if (required && text.trim() !== "") {
-      setError(false);
-    }
-  };
+const Input_text = React.forwardRef(
+  (
+    {
+      placeholder,
+      isPassword = false,
+      onChangeText,
+      onSubmitEditing,
+      returnKeyType,
+      icon,
+      required = false,
+      keyboardType = "default",
+      val, // parent-controlled value
+    },
+    ref
+  ) => {
+    const [hidePass, setHidePass] = useState(isPassword);
+    const [isFocused, setIsFocused] = useState(false);
+    const [error, setError] = useState(false);
 
-  const handleBlur = () => {
-    setIsFocused(false);
-    // לבדוק רק אם מצוין required
-    if (required && value.trim() === "") {
-      setError(true);
-    }
-  };
+    // if parent clears val, also clear our error
+    useEffect(() => {
+      if (!required || (val != null && val.trim() !== "")) {
+        setError(false);
+      }
+    }, [val, required]);
 
-  return (
-    <View style={{ marginVertical: 10 }}>
-      <View
-        style={[
-          styles.inputContainer,
-          {
-            borderColor: isFocused ? "#7E57C2" : "#ccc",
-            borderWidth: isFocused ? 2 : 1,
-          },
-        ]}
-      >
-        <Icon
-          name={icon}
-          size={height * 0.03}
-          color={isFocused ? "#7E57C2" : "grey"}
-          style={styles.icon}
-        />
-        <TextInput
-          style={styles.textInput}
-          placeholder={placeholder}
-          secureTextEntry={hide_pass}
-          onFocus={() => {
-            setIsFocused(true);
-            // אם מתחילים להקליד – נסיר שגיאה אם קיים
-            if (required) setError(false);
-          }}
-          onBlur={handleBlur}
-          onChangeText={handleChange}
-          ref={ref}
-          onSubmitEditing={onSubmitEditing}
-          returnKeyType={returnKeyType}
-          keyboardType={keyboardType}
-          value={val}
-        />
-        {isPassword && (
-          <TouchableOpacity
-            onPress={() => setHide_pass(!hide_pass)}
-            style={styles.eye}
-          >
-            <Icon
-              name={hide_pass ? "eyeo" : "eye"}
-              size={height * 0.03}
-              color={"grey"}
-              style={styles.icon}
-            />
-          </TouchableOpacity>
+    const handleBlur = () => {
+      setIsFocused(false);
+      if (required && (!val || val.trim() === "")) {
+        setError(true);
+      }
+    };
+
+    return (
+      <View style={{ marginVertical: 10 }}>
+        <View
+          style={[
+            styles.inputContainer,
+            {
+              borderColor: isFocused ? "#7E57C2" : "#ccc",
+              borderWidth: isFocused ? 2 : 1,
+            },
+          ]}
+        >
+          <Icon
+            name={icon}
+            size={height * 0.03}
+            color={isFocused ? "#7E57C2" : "grey"}
+            style={styles.icon}
+          />
+
+          <TextInput
+            ref={ref}
+            style={styles.textInput}
+            placeholder={placeholder}
+            secureTextEntry={hidePass}
+            onFocus={() => {
+              setIsFocused(true);
+              setError(false);
+            }}
+            onBlur={handleBlur}
+            onChangeText={onChangeText}
+            onSubmitEditing={onSubmitEditing}
+            returnKeyType={returnKeyType}
+            keyboardType={keyboardType}
+            value={val}
+          />
+
+          {isPassword && (
+            <TouchableOpacity
+              onPress={() => setHidePass((h) => !h)}
+              style={styles.eye}
+            >
+              <Icon
+                name={hidePass ? "eyeo" : "eye"}
+                size={height * 0.03}
+                color="grey"
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>required</Text>
+          </View>
         )}
       </View>
-
-      {error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>required</Text>
-        </View>
-      )}
-    </View>
-  );
-};
+    );
+  }
+);
 
 export default Input_text;
 
