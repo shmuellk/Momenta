@@ -11,11 +11,15 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   ScrollView,
+  Modal,
+  TouchableOpacity,
 } from "react-native";
 
 import AccountInfo from "./AccountInfo";
 import LogInInfo from "./LogInInfo";
 import VerificationScreen from "./VerificationScreen";
+import authModel from "../models/authModel";
+import axios from "axios";
 
 const { width, height } = Dimensions.get("window");
 const STEPS = ["1", "2", "3"];
@@ -24,6 +28,10 @@ const COLORS = ["#B39DDB", "#9575CD", "#7E57C2"];
 export default function RegistrationFlow({ navigation }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [currentStepColor, setCurrentStepColor] = useState(COLORS[0]);
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorModalMasseg, setErrorModalMasseg] = useState("");
+  const [nuv, setNuv] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState({
     fullname: "",
     Username: "",
@@ -72,8 +80,95 @@ export default function RegistrationFlow({ navigation }) {
     setUserData((prev) => ({ ...prev, [field]: val }));
   };
 
+  const handleRegister = async () => {
+    try {
+      setLoading(true);
+      const res = await authModel.register(userData);
+      if (res) {
+        setCurrentStep((s) => s + 1);
+      } else {
+        setErrorModalVisible(true);
+        setErrorModalMasseg("משתמש זה קיים במערכת, אנא נסא להתחבר");
+        setNuv(true);
+      }
+    } catch (error) {
+      setErrorModalVisible(true);
+      setErrorModalMasseg("קרתה שגיאה בהרשמה, אנא נסה שוב.");
+      setNuv(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleverify = async (number) => {
+    try {
+      setLoading(true);
+      const res = await authModel.verify({
+        code: number,
+        email: userData.email,
+      });
+
+      console.log("res = " + JSON.stringify(res));
+
+      if (res) {
+        setErrorModalMasseg("המשתמש נוצר בהצלחה!");
+        setErrorModalVisible(true);
+        setNuv(true);
+      } else {
+        setErrorModalMasseg("קוד האימות שגוי, אנא נסה שוב");
+        setErrorModalVisible(true);
+      }
+    } catch (error) {
+      setErrorModalVisible(true);
+      setErrorModalMasseg("קרתה שגיאה בהרשמה, אנא נסה שוב.");
+      setNuv(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    try {
+      console.log(userData.email);
+
+      await authModel.resend({ email: userData.email });
+      setErrorModalVisible(true);
+      setErrorModalMasseg("קוד חדש נשלח");
+    } catch (error) {
+      setErrorModalVisible(true);
+      setErrorModalMasseg("קרתה שגיאה בהרשמה, אנא נסה שוב.");
+      setNuv(true);
+    }
+  };
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <Modal
+        visible={errorModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          setErrorModalVisible(false);
+          setErrorModalMasseg("");
+          if (nuv) {
+            navigation.navigate("LogInScreen");
+          }
+        }}
+      >
+        <TouchableOpacity
+          style={popStyles.modalBackground}
+          activeOpacity={1}
+          onPressOut={() => {
+            setErrorModalVisible(false);
+            if (nuv) {
+              navigation.navigate("LogInScreen");
+            }
+          }}
+        >
+          <View style={popStyles.modalContent}>
+            <Text style={popStyles.text}>{errorModalMasseg}</Text>
+          </View>
+        </TouchableOpacity>
+      </Modal>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -141,8 +236,11 @@ export default function RegistrationFlow({ navigation }) {
               )}
               {currentStep === 1 && (
                 <LogInInfo
-                  onPress={() => setCurrentStep((s) => s + 1)}
+                  onPress={() => {
+                    handleRegister();
+                  }}
                   color={currentStepColor}
+                  loading={loading}
                   text="הבא"
                   handleChange={handleChange}
                   userData={userData}
@@ -150,11 +248,12 @@ export default function RegistrationFlow({ navigation }) {
               )}
               {currentStep === 2 && (
                 <VerificationScreen
-                  onPress={() => {
-                    /* final submit */
+                  onPress={(number) => {
+                    handleverify(number);
                   }}
                   color={currentStepColor}
                   text="הבא"
+                  resend={handleResend}
                 />
               )}
             </View>
@@ -225,5 +324,26 @@ const styles = StyleSheet.create({
   stepContent: {
     flex: 1,
     alignItems: "center",
+  },
+});
+const popStyles = StyleSheet.create({
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    width: 250,
+  },
+  text: {
+    marginBottom: 10,
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });

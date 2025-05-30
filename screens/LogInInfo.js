@@ -10,7 +10,14 @@ const isValidEmail = (email) => {
   return re.test(email);
 };
 
-const LogInInfo = ({ text, onPress, color, handleChange, userData = {} }) => {
+const LogInInfo = ({
+  text,
+  onPress,
+  color,
+  handleChange,
+  userData = {},
+  loading,
+}) => {
   const PasswordRef = useRef();
   const RepassRef = useRef();
 
@@ -81,6 +88,7 @@ const LogInInfo = ({ text, onPress, color, handleChange, userData = {} }) => {
           val={userData.pass || ""}
           onChangeText={(val) => {
             handleChange("pass", val);
+            handleChange("password", val);
             setErrors((e) => ({
               ...e,
               passEmpty: val.trim() === "",
@@ -119,7 +127,13 @@ const LogInInfo = ({ text, onPress, color, handleChange, userData = {} }) => {
       </View>
 
       <View style={styles.nextButton}>
-        <Acsess_btn text={text} color={color} onPress={validateAndNext} />
+        <Acsess_btn
+          text={text}
+          color={color}
+          onPress={validateAndNext}
+          disabled={loading}
+          loading={loading}
+        />
       </View>
     </View>
   );

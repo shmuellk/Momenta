@@ -24,16 +24,25 @@ const LogInScreen = ({ navigation }) => {
   const [password, setPassword] = useState("");
   const [popUp, setPopUp] = useState(false);
   const [error, setError] = useState(false);
+  const [loding, setLoding] = useState(false);
 
   const passwordRef = useRef();
 
   const LogIn = async () => {
-    const userData = await userModel.login({ email, password });
-    if (userData) {
-      setError(false);
-      navigation.navigate("MainScreen", userData);
-    } else {
+    setLoding(true);
+    try {
+      const userData = await userModel.login({ email, password });
+      if (userData) {
+        setError(false);
+        navigation.navigate("MainScreen", userData);
+      } else {
+        setError(true);
+      }
+    } catch (error) {
+      console.log(error);
       setError(true);
+    } finally {
+      setLoding(false);
     }
   };
 
@@ -79,7 +88,13 @@ const LogInScreen = ({ navigation }) => {
             />
           </View>
           <View style={styles.logIn_btn}>
-            <Acsess_btn text="התחברות" onPress={LogIn} color="#7E57C2" />
+            <Acsess_btn
+              text="התחברות"
+              onPress={LogIn}
+              color="#7E57C2"
+              disabled={loding}
+              loading={loding}
+            />
           </View>
 
           <View style={styles.registar_contain}>

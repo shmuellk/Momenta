@@ -4,19 +4,33 @@ import {
   View,
   Dimensions,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import React from "react";
 const { width, height } = Dimensions.get("window");
 
-const Acsess_btn = ({ text, onPress, color, disabled = false }) => {
+const Acsess_btn = ({
+  text,
+  onPress,
+  color,
+  disabled = false,
+  loading = false,
+}) => {
   return (
     <TouchableOpacity
-      style={[styles.button, { backgroundColor: color }]}
+      style={[
+        styles.button,
+        { backgroundColor: color, opacity: disabled ? 0.7 : 1 },
+      ]}
       onPress={onPress}
       disabled={disabled}
     >
       <View style={styles.buttonContent}>
-        <Text style={styles.buttonText}>{text}</Text>
+        {loading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>{text}</Text>
+        )}
       </View>
     </TouchableOpacity>
   );
