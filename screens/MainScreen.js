@@ -10,7 +10,7 @@ import ChatsScreen from "./ChatsScreen";
 
 const Tab = createBottomTabNavigator();
 
-export default function App() {
+export default function App({ route }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -35,9 +35,21 @@ export default function App() {
         tabBarIconStyle: { marginTop: 4 },
       })}
     >
-      <Tab.Screen name="PROFILE" component={ProfileScreen} />
-      <Tab.Screen name="POSTS" component={PostsScreen} />
-      <Tab.Screen name="CHATS" component={ChatsScreen} />
+      <Tab.Screen
+        name="PROFILE"
+        component={ProfileScreen}
+        initialParams={{ userdata: route.params ?? null }}
+      />
+      <Tab.Screen
+        name="POSTS"
+        component={PostsScreen}
+        initialParams={{ userdata: route.params ?? null }}
+      />
+      <Tab.Screen
+        name="CHATS"
+        component={ChatsScreen}
+        initialParams={{ userdata: route.params ?? null }}
+      />
     </Tab.Navigator>
   );
 }

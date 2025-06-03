@@ -12,7 +12,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 
 export default function CreatePostScreen({ navigation, route }) {
-  const userId = route.params.userId; // מניחים שיש את המשתמש כפרמטר
+  const userId = route.params.userdata._id; // מניחים שיש את המשתמש כפרמטר
   const [uploading, setUploading] = useState(false);
   const [text, setText] = useState(""); // שדה הטקסט לפוסט
 
@@ -28,7 +28,8 @@ export default function CreatePostScreen({ navigation, route }) {
 
       // בחירת תמונה
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: [ImagePicker.MediaType.Images],
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+
         quality: 0.8,
       });
       if (result.canceled) return;
@@ -49,7 +50,7 @@ export default function CreatePostScreen({ navigation, route }) {
       formData.append("text", text); // <-- הוספנו את שדה הטקסט כאן
 
       setUploading(true);
-      const resp = await fetch("http://192.168.1.5:3000/posts", {
+      const resp = await fetch("http://128.140.125.244:5000/post", {
         method: "POST",
         headers: {
           "Content-Type": "multipart/form-data",
