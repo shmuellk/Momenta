@@ -1,5 +1,5 @@
 import axios from "axios";
-const ip = "192.168.1.55:3000";
+const ip = "128.140.125.244:5000";
 const login = async (data) => {
   const email = data.email ? data.email : "";
   const password = data.password ? data.password : "";

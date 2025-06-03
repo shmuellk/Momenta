@@ -1,11 +1,11 @@
 // PostsScreen.js
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-
+import CreatePostScreen from "../components/CreatePostScreen";
 export default function PostsScreen() {
   return (
     <View style={styles.center}>
-      <Text>Posts Screen</Text>
+      <CreatePostScreen />
     </View>
   );
 }

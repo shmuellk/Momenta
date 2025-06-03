@@ -1,5 +1,5 @@
 import axios from "axios";
-const ip = "192.168.1.55:3000";
+const ip = "128.140.125.244:5000";
 
 const register = async (data) => {
   const name = data.fullname ? data.fullname : "";
