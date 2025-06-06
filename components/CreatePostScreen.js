@@ -4,14 +4,17 @@ import {
   Text,
   TextInput,
   StyleSheet,
-  Button,
   ActivityIndicator,
   Alert,
   Platform,
+  Dimensions,
+  TouchableOpacity,
+  I18nManager,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+const { width, height } = Dimensions.get("window");
 
-export default function CreatePostScreen({ navigation, route }) {
+export default function CreatePostScreen({ navigation, route, popup }) {
   const userId = route.params.userdata._id; // מניחים שיש את המשתמש כפרמטר
   const [uploading, setUploading] = useState(false);
   const [text, setText] = useState(""); // שדה הטקסט לפוסט
@@ -29,7 +32,6 @@ export default function CreatePostScreen({ navigation, route }) {
       // בחירת תמונה
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.All,
-
         quality: 0.8,
       });
       if (result.canceled) return;
@@ -63,7 +65,10 @@ export default function CreatePostScreen({ navigation, route }) {
       Alert.alert("✅ סיום!", "התמונה והטקסט נשמרו בהצלחה.", [
         {
           text: "אוקיי",
-          onPress: () => navigation.goBack(),
+
+          onPress: () => {
+            popup(false);
+          },
         },
       ]);
     } catch (err) {
@@ -75,40 +80,95 @@ export default function CreatePostScreen({ navigation, route }) {
   }, [userId, text]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>כתוב טקסט לפוסט:</Text>
-      <TextInput
-        value={text}
-        onChangeText={setText}
-        placeholder="להוסיף תיאור או כיתוב..."
-        style={styles.input}
-      />
+    <View style={styles.screenContainer}>
+      <View style={styles.card}>
+        <Text style={styles.title}>כתוב טקסט לפוסט:</Text>
 
-      {uploading ? (
-        <ActivityIndicator size="large" />
-      ) : (
-        <Button title="בחר תמונה והעלה פוסט" onPress={pickAndUpload} />
-      )}
+        <TextInput
+          value={text}
+          onChangeText={(val) => {
+            setText(val);
+          }}
+          placeholder="להוסיף תיאור או כיתוב..."
+          placeholderTextColor="#999"
+          style={styles.textInput}
+          multiline
+          numberOfLines={4}
+        />
+        {uploading ? (
+          <ActivityIndicator
+            size="large"
+            color="#1E90FF"
+            style={styles.loader}
+          />
+        ) : (
+          <TouchableOpacity style={styles.button} onPress={pickAndUpload}>
+            <Text style={styles.buttonText}>בחר תמונה והעלה פוסט</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  // המכול הבסיסית מכסה את כל המסך ומרכזת כל דבר במרכז
+  screenContainer: {
     flex: 1,
-    padding: 16,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 16,
+  },
+  card: {
+    width: width * 0.9,
     backgroundColor: "#fff",
+    borderRadius: 12,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    // הצללה לאנדרואיד
+    elevation: 4,
+    // הצללה ל־iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
-  label: {
-    fontSize: 16,
-    marginBottom: 8,
+  title: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 12,
+    textAlign: I18nManager.isRTL ? "left" : "right",
   },
-  input: {
+  textInput: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    marginBottom: 16,
-    height: 40,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    paddingBottom: 12,
+    fontSize: 16,
+    color: "#333",
+    textAlignVertical: "top", // כדי שהטקסט יתחיל מהפינה העליונה
+    minHeight: 100,
+    marginBottom: 20,
+    backgroundColor: "#fafafa",
+  },
+  loader: {
+    marginVertical: 12,
+  },
+  // כפתור מותאם אישית עם צבע, פינות מעוגלות, וגובה סטנדרטי
+  button: {
+    backgroundColor: "#1E90FF",
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+  // הטקסט שבתוך הכפתור
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
