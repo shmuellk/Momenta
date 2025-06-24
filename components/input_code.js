@@ -1,44 +1,59 @@
-import { StyleSheet, Text, View, Dimensions, TextInput } from "react-native";
-import React, { useState } from "react";
-const { width, height } = Dimensions.get("window");
+import { StyleSheet, TextInput, View, Dimensions } from "react-native";
+import React, { useState, forwardRef } from "react";
+const { width } = Dimensions.get("window");
 
-const Input_code = ({
-  KeyHint,
-  ref,
-  onSubmitEditing,
-  autoFocus = false,
-  onDeleteBack,
-  onChangeText,
-}) => {
-  const [focus, setFocus] = useState(false);
-  return (
-    <View
-      style={[styles.input_contain, { borderColor: focus ? "red" : "black" }]}
-    >
-      <TextInput
-        style={styles.input}
-        onFocus={() => setFocus(true)}
-        onBlur={() => setFocus(false)}
-        maxLength={1}
-        selectTextOnFocus={true}
-        keyboardType="number-pad"
-        enterKeyHint={KeyHint}
-        ref={ref}
-        onSubmitEditing={onSubmitEditing}
-        autoFocus={autoFocus}
-        onChangeText={(text) => {
-          onChangeText(text);
-          if (text.length === 1) {
-            onSubmitEditing?.();
-          }
-          if (text.length === 0) {
-            onDeleteBack?.();
-          }
-        }}
-      ></TextInput>
-    </View>
-  );
-};
+const Input_code = forwardRef(
+  (
+    {
+      KeyHint,
+      onSubmitEditing,
+      autoFocus = false,
+      onDeleteBack,
+      onChangeText,
+      value,
+    },
+    ref
+  ) => {
+    const [focus, setFocus] = useState(false);
+
+    return (
+      <View
+        style={[
+          styles.input_contain,
+          {
+            borderColor: focus ? "#7E57C2" : "black",
+            borderWidth: focus ? 2 : 1,
+          },
+        ]}
+      >
+        <TextInput
+          ref={ref}
+          style={styles.input}
+          onFocus={() => setFocus(true)}
+          onBlur={() => setFocus(false)}
+          maxLength={1}
+          selectTextOnFocus={true}
+          keyboardType="number-pad"
+          enterKeyHint={KeyHint}
+          onSubmitEditing={onSubmitEditing}
+          autoFocus={autoFocus}
+          value={value}
+          onKeyPress={({ nativeEvent }) => {
+            if (nativeEvent.key === "Backspace" && value === "") {
+              onDeleteBack?.();
+            }
+          }}
+          onChangeText={(text) => {
+            onChangeText(text);
+            if (text.length === 1) {
+              onSubmitEditing?.();
+            }
+          }}
+        />
+      </View>
+    );
+  }
+);
 
 export default Input_code;
 

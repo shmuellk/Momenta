@@ -76,7 +76,7 @@ export default function VerificationScreen({ onPress, resend }) {
         )}
       </View>
 
-      <Acsess_btn text="אישור" color="blue" onPress={handleSubmit} />
+      <Acsess_btn text="אישור" color="#8A66C8" onPress={handleSubmit} />
     </View>
   );
 }
@@ -92,11 +92,11 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   countdown: {
-    color: "#888",
+    color: "#B39DDB",
     fontSize: 14,
   },
   resendButton: {
-    color: "#007AFF",
+    color: "#B39DDB",
     fontSize: 16,
     textDecorationLine: "underline",
   },

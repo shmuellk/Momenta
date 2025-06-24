@@ -1,20 +1,39 @@
-// App.js
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 import PostsScreen from "./PostsScreen";
 import ProfileScreen from "./ProfileScreen";
 import ChatsScreen from "./ChatsScreen";
+import EditProfileScreen from "./EditProfileScreen"; // ✅ ייבוא חדש
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
+
+function ProfileStack({ route }) {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="ProfileMain"
+        component={ProfileScreen}
+        options={{ headerShown: false }}
+        initialParams={{ userdata: route.params?.userdata }}
+      />
+      <Stack.Screen
+        name="EditProfile"
+        component={EditProfileScreen}
+        options={{ title: "עריכת פרופיל" }}
+      />
+    </Stack.Navigator>
+  );
+}
 
 export default function App({ route }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        // icon above the label
         tabBarIcon: ({ color, size }) => {
           let iconName;
 
@@ -34,10 +53,11 @@ export default function App({ route }) {
         tabBarLabelStyle: { fontSize: 12, marginBottom: 4 },
         tabBarIconStyle: { marginTop: 4 },
       })}
+      initialRouteName="POSTS"
     >
       <Tab.Screen
         name="PROFILE"
-        component={ProfileScreen}
+        component={ProfileStack}
         initialParams={{ userdata: route.params ?? null }}
       />
       <Tab.Screen

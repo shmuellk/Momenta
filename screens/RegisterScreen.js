@@ -1,3 +1,4 @@
+// RegistrationFlow.js
 import React, { useRef, useState, useEffect } from "react";
 import {
   View,
@@ -15,15 +16,16 @@ import {
   TouchableOpacity,
 } from "react-native";
 
-import AccountInfo from "./AccountInfo";
-import LogInInfo from "./LogInInfo";
-import VerificationScreen from "./VerificationScreen";
+import AccountInfo from "./AccountInfo"; // step 0
+import AccountInfoB from "./AccountInfoB"; // step 1 (gender & image)
+import LogInInfo from "./LogInInfo"; // step 2 (maybe additional info)
+import VerificationScreen from "./VerificationScreen"; // step 3
+
 import authModel from "../models/authModel";
-import axios from "axios";
 
 const { width, height } = Dimensions.get("window");
-const STEPS = ["1", "2", "3"];
-const COLORS = ["#B39DDB", "#9575CD", "#7E57C2"];
+const STEPS = ["1", "2", "3", "4"];
+const COLORS = ["#B39DDB", "#9575CD", "#8A66C8", "#7E57C2"];
 
 export default function RegistrationFlow({ navigation }) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -32,15 +34,19 @@ export default function RegistrationFlow({ navigation }) {
   const [errorModalMasseg, setErrorModalMasseg] = useState("");
   const [nuv, setNuv] = useState(false);
   const [loading, setLoading] = useState(false);
+
   const [userData, setUserData] = useState({
     fullname: "",
     Username: "",
+    imageProfile: "", // we’ll fill this in step 1
+    gander: "", // step 1
     Phone: "",
     email: "",
     password: "",
     pass: "", // temporary
     rePass: "", // temporary
   });
+
   const progressAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -52,6 +58,7 @@ export default function RegistrationFlow({ navigation }) {
     setCurrentStepColor(COLORS[currentStep]);
   }, [currentStep]);
 
+  // Handle Android back button
   useEffect(() => {
     const onBackPress = () => {
       if (currentStep > 0) {
@@ -80,15 +87,19 @@ export default function RegistrationFlow({ navigation }) {
     setUserData((prev) => ({ ...prev, [field]: val }));
   };
 
+  // STEP 1: After picking image & choosing gender
   const handleRegister = async () => {
     try {
       setLoading(true);
       const res = await authModel.register(userData);
-      if (res) {
+      if (res.ok) {
+        // proceed to “LogInInfo” or “VerificationScreen”
         setCurrentStep((s) => s + 1);
       } else {
+        console.log("data = " + JSON.stringify(res));
+
         setErrorModalVisible(true);
-        setErrorModalMasseg("משתמש זה קיים במערכת, אנא נסא להתחבר");
+        setErrorModalMasseg(res.error || "משהו השתבש בהרשמה");
         setNuv(true);
       }
     } catch (error) {
@@ -100,27 +111,24 @@ export default function RegistrationFlow({ navigation }) {
     }
   };
 
-  const handleverify = async (number) => {
+  const handleVerify = async (number) => {
     try {
       setLoading(true);
       const res = await authModel.verify({
         code: number,
         email: userData.email,
       });
-
-      console.log("res = " + JSON.stringify(res));
-
       if (res) {
         setErrorModalMasseg("המשתמש נוצר בהצלחה!");
         setErrorModalVisible(true);
         setNuv(true);
       } else {
-        setErrorModalMasseg("קוד האימות שגוי, אנא נסה שוב");
+        setErrorModalMasseg(res.error || "קוד האימות שגוי, אנא נסה שוב");
         setErrorModalVisible(true);
       }
     } catch (error) {
       setErrorModalVisible(true);
-      setErrorModalMasseg("קרתה שגיאה בהרשמה, אנא נסה שוב.");
+      setErrorModalMasseg("קרתה שגיאה באימות, אנא נסה שוב.");
       setNuv(true);
     } finally {
       setLoading(false);
@@ -129,17 +137,16 @@ export default function RegistrationFlow({ navigation }) {
 
   const handleResend = async () => {
     try {
-      console.log(userData.email);
-
       await authModel.resend({ email: userData.email });
       setErrorModalVisible(true);
       setErrorModalMasseg("קוד חדש נשלח");
     } catch (error) {
       setErrorModalVisible(true);
-      setErrorModalMasseg("קרתה שגיאה בהרשמה, אנא נסה שוב.");
+      setErrorModalMasseg("קרתה שגיאה, אנא נסה שוב.");
       setNuv(true);
     }
   };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <Modal
@@ -169,6 +176,7 @@ export default function RegistrationFlow({ navigation }) {
           </View>
         </TouchableOpacity>
       </Modal>
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -183,6 +191,7 @@ export default function RegistrationFlow({ navigation }) {
               <Text style={styles.comp_name}>Momenta</Text>
             </View>
 
+            {/* Progress Bar */}
             <View
               style={[
                 styles.stepContainer,
@@ -224,6 +233,7 @@ export default function RegistrationFlow({ navigation }) {
               })}
             </View>
 
+            {/* Step Content */}
             <View style={styles.stepContent}>
               {currentStep === 0 && (
                 <AccountInfo
@@ -235,6 +245,16 @@ export default function RegistrationFlow({ navigation }) {
                 />
               )}
               {currentStep === 1 && (
+                <AccountInfoB
+                  onPress={() => setCurrentStep((s) => s + 1)}
+                  color={currentStepColor}
+                  loading={loading}
+                  text="הבא"
+                  handleChange={handleChange}
+                  userData={userData}
+                />
+              )}
+              {currentStep === 2 && (
                 <LogInInfo
                   onPress={() => {
                     handleRegister();
@@ -246,13 +266,11 @@ export default function RegistrationFlow({ navigation }) {
                   userData={userData}
                 />
               )}
-              {currentStep === 2 && (
+              {currentStep === 3 && (
                 <VerificationScreen
-                  onPress={(number) => {
-                    handleverify(number);
-                  }}
+                  onPress={(number) => handleVerify(number)}
                   color={currentStepColor}
-                  text="הבא"
+                  text="בודק קוד"
                   resend={handleResend}
                 />
               )}
@@ -276,8 +294,8 @@ const styles = StyleSheet.create({
     marginTop: height * 0.1,
   },
   image: {
-    height: 130,
-    width: 130,
+    height: 120,
+    width: 120,
     resizeMode: "contain",
   },
   comp_name: {
@@ -326,6 +344,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 });
+
 const popStyles = StyleSheet.create({
   modalBackground: {
     flex: 1,

@@ -1,12 +1,24 @@
 import React from "react";
 import { StyleSheet, Text, Dimensions, View, I18nManager } from "react-native";
 import LottieView from "lottie-react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Acsess_btn from "../components/acsess_btn";
 const { width, height } = Dimensions.get("window");
 
 const PrevLog = ({ navigation }) => {
-  const handlePress = () => {
-    navigation.navigate("LogInScreen");
+  const handlePress = async () => {
+    try {
+      const user = await AsyncStorage.getItem("userData");
+      if (user) {
+        const parsedUser = JSON.parse(user);
+        navigation.navigate("MainScreen", parsedUser);
+      } else {
+        navigation.navigate("LogInScreen");
+      }
+    } catch (err) {
+      console.log("Error checking logged in user:", err);
+      navigation.navigate("LogInScreen");
+    }
   };
 
   return (
