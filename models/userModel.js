@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Platform } from "react-native";
 
-const ip = "128.140.125.244:5000";
+const ip = "128.140.125.244:5001";
 
 // התחברות
 const login = async (data) => {
@@ -89,7 +89,7 @@ const updateProfileImage = async (userId, localImageUri) => {
       type: mimeType,
     });
 
-    const resp = await axios.post(
+    const response = await axios.post(
       `http://${ip}/users/updateProfileImage`,
       formData,
       {
@@ -99,14 +99,29 @@ const updateProfileImage = async (userId, localImageUri) => {
       }
     );
 
-    return { ok: true, data: resp.data };
+    return { ok: true, data: response.data.user };
   } catch (error) {
-    console.log(
-      "Error updating profile image:",
-      error.response || error.message
-    );
+    console.log("Error uploading image:", error.message);
     return { ok: false, error: error.response?.data?.error || error.message };
   }
 };
 
-export default { login, getUser, updateUser, updateProfileImage };
+const getUsersComplit = async (searchText) => {
+  try {
+    const resp = await axios.post(`http://${ip}/users/getUsersComplit`, {
+      data: searchText,
+    });
+    return resp.data;
+  } catch (error) {
+    console.log("Error in getUsersComplit:", error.message);
+    return [];
+  }
+};
+
+export default {
+  login,
+  getUser,
+  updateUser,
+  updateProfileImage,
+  getUsersComplit,
+};

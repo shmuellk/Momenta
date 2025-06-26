@@ -7,7 +7,8 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import PostsScreen from "./PostsScreen";
 import ProfileScreen from "./ProfileScreen";
 import ChatsScreen from "./ChatsScreen";
-import EditProfileScreen from "./EditProfileScreen"; // ✅ ייבוא חדש
+import EditProfileScreen from "./EditProfileScreen";
+import ChatRoomScreen from "./ChatRoomScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -30,6 +31,23 @@ function ProfileStack({ route }) {
   );
 }
 
+function ChatsStack({ route }) {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="ChatsMain"
+        component={ChatsScreen}
+        options={{ headerShown: false }}
+        initialParams={{ userdata: route.params?.userdata }}
+      />
+      <Stack.Screen
+        name="ChatRoom"
+        component={ChatRoomScreen}
+        options={{ title: "צ'אט פרטי" }}
+      />
+    </Stack.Navigator>
+  );
+}
 export default function App({ route }) {
   return (
     <Tab.Navigator
@@ -67,7 +85,7 @@ export default function App({ route }) {
       />
       <Tab.Screen
         name="CHATS"
-        component={ChatsScreen}
+        component={ChatsStack}
         initialParams={{ userdata: route.params ?? null }}
       />
     </Tab.Navigator>

@@ -1,5 +1,5 @@
 import axios from "axios";
-const ip = "128.140.125.244:5000";
+const ip = "128.140.125.244:5001";
 import { Platform } from "react-native";
 
 const register = async (userData) => {

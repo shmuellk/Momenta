@@ -1,24 +1,18 @@
 // postModel.js
 import axios from "axios";
 
-const ip = "128.140.125.244:5000";
+const ip = "128.140.125.244:5001";
 
 const creatPost = async (formData) => {
   try {
-    // Make sure to POST the multipart/form-data to your /post route
-    const resp = await axios.post(`http://${ip}/post`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const resp = await axios.post(`http://${ip}/post`, formData); // בלי headers בכלל
 
-    // Return an object with an "ok" boolean and the JSON payload
     return {
       ok: resp.status >= 200 && resp.status < 300,
       data: resp.data,
     };
   } catch (error) {
-    console.log("Error during creatPost request:", error);
+    console.log("Error during creatPost request:", error.message);
     return {
       ok: false,
       error: error.response?.data || error.message,
