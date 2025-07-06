@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// 🔹 screens/ChatsScreen.js
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   TextInput,
@@ -9,13 +10,12 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
-  I18nManager,
 } from "react-native";
 import moment from "moment";
 import Ionicons from "react-native-vector-icons/MaterialCommunityIcons";
 import userModel from "../models/userModel";
 import chatModel from "../models/chatModel";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
 
@@ -27,37 +27,51 @@ export default function ChatsScreen({ route }) {
   const [loading, setLoading] = useState(false);
   const currentUser = route.params?.userdata;
 
+  const fetchChats = async () => {
+    const resp = await chatModel.getUserChats(currentUser._id);
+    if (resp.ok) {
+      const allChats = resp.data;
+
+      const anonChat = allChats.find(
+        (c) => c.isAnonymous && c.users.some((u) => u._id === currentUser._id)
+      );
+      const regularChats = allChats
+        .filter((c) => !c.isAnonymous || c.isRevealed)
+        .sort((a, b) => {
+          const aTime = a.messages.at(-1)?.createdAt || a.updatedAt;
+          const bTime = b.messages.at(-1)?.createdAt || b.updatedAt;
+          return new Date(bTime) - new Date(aTime);
+        });
+
+      const ordered = anonChat ? [anonChat, ...regularChats] : regularChats;
+      setExistingChats(ordered);
+    }
+  };
+
+  useEffect(() => {
+    chatModel.subscribeToReveal(() => {
+      fetchChats();
+    });
+    return () => {
+      chatModel.unsubscribeFromReveal();
+    };
+  }, []);
+
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
-      if (searchText.trim()) {
-        handleSearch(searchText);
-      } else {
-        setSearchResults([]);
-      }
+      if (searchText.trim()) handleSearch(searchText);
+      else setSearchResults([]);
     }, 400);
-
     return () => clearTimeout(delayDebounce);
   }, [searchText]);
 
-  useEffect(() => {
-    const fetchChats = async () => {
-      const resp = await chatModel.getUserChats(currentUser._id);
-      if (resp.ok) {
-        const sortedChats = resp.data.sort((a, b) => {
-          const aTime =
-            a.messages[a.messages.length - 1]?.createdAt || a.updatedAt;
-          const bTime =
-            b.messages[b.messages.length - 1]?.createdAt || b.updatedAt;
-          return new Date(bTime) - new Date(aTime);
-        });
-        setExistingChats(sortedChats);
-      }
-    };
-
-    if (currentUser?._id) {
+  useFocusEffect(
+    useCallback(() => {
+      setSearchText("");
+      setSearchResults([]);
       fetchChats();
-    }
-  }, [currentUser]);
+    }, [currentUser])
+  );
 
   const handleSearch = async (text) => {
     setLoading(true);
@@ -73,9 +87,28 @@ export default function ChatsScreen({ route }) {
     });
   };
 
+  const onAnonymousPress = async () => {
+    const resp = await chatModel.startAnonymousChat(currentUser._id);
+    if (resp.ok) {
+      const chat = resp.data;
+      const partnerId = chat.users.find((id) => id !== currentUser._id);
+      navigation.navigate("ChatRoom", {
+        myUserId: currentUser._id,
+        targetUser: { _id: partnerId, userName: "אנונימי", profileImage: null },
+        chatId: chat._id,
+        isAnonymous: true,
+      });
+    } else {
+      alert(
+        resp.error === "No users available"
+          ? "לא נמצאו משתמשים זמינים לשיחה אנונימית."
+          : resp.error
+      );
+    }
+  };
+
   const renderUserItem = ({ item }) => {
     if (item._id === currentUser._id) return null;
-
     return (
       <TouchableOpacity
         style={styles.chatItem}
@@ -86,7 +119,7 @@ export default function ChatsScreen({ route }) {
             {item.profileImage ? (
               <Image
                 source={{ uri: item.profileImage }}
-                style={{ width: 48, height: 48, borderRadius: 24 }}
+                style={styles.avatarImage}
               />
             ) : (
               <Text style={{ fontSize: 20, color: "#555" }}>
@@ -94,7 +127,6 @@ export default function ChatsScreen({ route }) {
               </Text>
             )}
           </View>
-
           <View style={styles.chatInfo}>
             <Text style={styles.username}>{item.userName}</Text>
             <Text style={styles.lastMessage}>התחל שיחה</Text>
@@ -106,37 +138,48 @@ export default function ChatsScreen({ route }) {
 
   const renderChatItem = ({ item }) => {
     const targetUser = item.users.find((u) => u._id !== currentUser._id);
-    const lastMessage = item.messages[item.messages.length - 1];
-    const time = lastMessage?.createdAt
-      ? moment(lastMessage.createdAt).format("HH:mm")
+    const isAnon = item.isAnonymous && !item.isRevealed;
+    const lastMsg = item.messages.at(-1);
+    const time = lastMsg?.createdAt
+      ? moment(lastMsg.createdAt).format("HH:mm")
       : "";
 
     return (
       <TouchableOpacity
         style={styles.chatItem}
-        onPress={() => onUserPress(targetUser)}
+        onPress={() =>
+          navigation.navigate("ChatRoom", {
+            myUserId: currentUser._id,
+            targetUser: isAnon
+              ? { _id: targetUser._id, userName: "אנונימי", profileImage: null }
+              : targetUser,
+            chatId: item._id,
+            isAnonymous: isAnon,
+          })
+        }
       >
         <View style={styles.chatRow}>
           <View style={styles.avatarPlaceholder}>
-            {targetUser.profileImage ? (
+            {isAnon ? (
               <Image
-                source={{ uri: targetUser.profileImage }}
-                style={{ width: 48, height: 48, borderRadius: 24 }}
+                source={require("../assets/defualt_profil.jpg")}
+                style={styles.avatarImage}
               />
             ) : (
-              <Text style={{ fontSize: 20, color: "#555" }}>
-                {targetUser.userName[0]}
-              </Text>
+              <Image
+                source={{ uri: targetUser.profileImage }}
+                style={styles.avatarImage}
+              />
             )}
           </View>
-
           <View style={styles.chatInfo}>
-            <Text style={styles.username}>{targetUser.userName}</Text>
+            <Text style={styles.username}>
+              {isAnon ? "אנונימי" : targetUser.userName}
+            </Text>
             <Text style={styles.lastMessage} numberOfLines={1}>
-              {lastMessage?.text || "לא נשלחה עדיין הודעה"}
+              {lastMsg?.text || "לא נשלחה עדיין הודעה"}
             </Text>
           </View>
-
           <Text style={styles.timeText}>{time}</Text>
         </View>
       </TouchableOpacity>
@@ -155,48 +198,50 @@ export default function ChatsScreen({ route }) {
             placeholderTextColor="#999"
             value={searchText}
             onChangeText={setSearchText}
+            selectTextOnFocus
           />
         </View>
       </View>
 
-      {/* שיחות קיימות */}
+      {/* כפתור אנונימי */}
       {!searchText.trim() && (
-        <View style={styles.chatsContainer}>
-          <Text style={styles.sectionTitle}>השיחות שלי</Text>
-          <FlatList
-            data={existingChats}
-            keyExtractor={(item) => item._id}
-            renderItem={renderChatItem}
-          />
-        </View>
+        <TouchableOpacity style={styles.anonButton} onPress={onAnonymousPress}>
+          <Text style={styles.anonText}>התחל צ'אט אנונימי</Text>
+        </TouchableOpacity>
       )}
 
-      {/* תוצאות חיפוש */}
-      {searchText.trim() && (
-        <View style={styles.chatsContainer}>
-          {loading ? (
+      {/* שיחות */}
+      <View style={styles.chatsContainer}>
+        {searchText.trim() ? (
+          loading ? (
             <ActivityIndicator size="large" color="#7E57C2" />
           ) : (
             <>
               <Text style={styles.sectionTitle}>תוצאות חיפוש</Text>
               <FlatList
                 data={searchResults}
-                keyExtractor={(item) => item._id}
+                keyExtractor={(i) => i._id}
                 renderItem={renderUserItem}
               />
             </>
-          )}
-        </View>
-      )}
+          )
+        ) : (
+          <>
+            <Text style={styles.sectionTitle}>השיחות שלי</Text>
+            <FlatList
+              data={existingChats}
+              keyExtractor={(i) => i._id}
+              renderItem={renderChatItem}
+            />
+          </>
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFF",
-  },
+  container: { flex: 1, backgroundColor: "#FFF" },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
@@ -205,10 +250,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     textAlign: "right",
   },
-  searchContainer: {
-    alignItems: "center",
-    justifyContent: "flex-start",
-  },
+  searchContainer: { alignItems: "center", justifyContent: "flex-start" },
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
@@ -229,10 +271,7 @@ const styles = StyleSheet.create({
     height: "100%",
     textAlign: "right",
   },
-  chatsContainer: {
-    flex: 1,
-    padding: 12,
-  },
+  chatsContainer: { flex: 1, padding: 12 },
   chatItem: {
     paddingVertical: 12,
     paddingHorizontal: 10,
@@ -246,7 +285,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   chatRow: {
-    flexDirection: "row-reverse", // RTL
+    flexDirection: "row-reverse",
     alignItems: "center",
     justifyContent: "space-between",
   },
@@ -261,10 +300,8 @@ const styles = StyleSheet.create({
     borderColor: "#BBB",
     marginLeft: 10,
   },
-  chatInfo: {
-    flex: 1,
-    marginHorizontal: 10,
-  },
+  avatarImage: { width: 48, height: 48, borderRadius: 24 },
+  chatInfo: { flex: 1, marginHorizontal: 10 },
   username: {
     fontSize: 16,
     fontWeight: "600",
@@ -282,4 +319,13 @@ const styles = StyleSheet.create({
     color: "#999",
     marginHorizontal: 5,
   },
+  anonButton: {
+    marginTop: 10,
+    marginHorizontal: 20,
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: "#7E57C2",
+    alignItems: "center",
+  },
+  anonText: { color: "#fff", fontWeight: "bold" },
 });

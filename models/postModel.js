@@ -5,14 +5,18 @@ const ip = "128.140.125.244:5001";
 
 const creatPost = async (formData) => {
   try {
-    const resp = await axios.post(`http://${ip}/post`, formData); // בלי headers בכלל
+    const resp = await axios.post(`http://${ip}/post`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
     return {
       ok: resp.status >= 200 && resp.status < 300,
       data: resp.data,
     };
   } catch (error) {
-    console.log("Error during creatPost request:", error.message);
+    console.log("🔴 Error during creatPost request:", error.message);
     return {
       ok: false,
       error: error.response?.data || error.message,

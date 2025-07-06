@@ -12,8 +12,76 @@ const createOrGetChat = async (myUserId, targetUserId) => {
     });
     return { ok: true, data: resp.data };
   } catch (error) {
-    console.log("❌ createOrGetChat error:", error.message);
     return { ok: false, error: error.message };
+  }
+};
+
+const getUserChats = async (userId) => {
+  try {
+    const resp = await axios.get(`${ip}/chat/${userId}`);
+    return { ok: true, data: resp.data };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+};
+
+const startAnonymousChat = async (userId) => {
+  try {
+    const resp = await axios.post(`${ip}/chat/anonymous`, { userId });
+    return { ok: true, data: resp.data };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+};
+
+const requestReveal = async (chatId, userId) => {
+  try {
+    const resp = await axios.post(`${ip}/chat/anonymous/requestReveal`, {
+      chatId,
+      userId,
+    });
+    return { ok: true, data: resp.data };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+};
+
+const checkRevealStatus = async (chatId, userId) => {
+  try {
+    const resp = await axios.get(
+      `${ip}/chat/anonymous/checkReveal/${chatId}/${userId}`
+    );
+    return { ok: true, data: resp.data };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+};
+
+const respondToReveal = async (chatId, userId, accept) => {
+  try {
+    const resp = await axios.post(`${ip}/chat/anonymous/respondReveal`, {
+      chatId,
+      userId,
+      accept,
+    });
+    if (accept && resp.data?.data?.isRevealed) {
+      socket.emit("chatRevealed", { chatId });
+    }
+    return { ok: true, data: resp.data };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+};
+
+const startNewAnonymousChat = async (userId, chatId) => {
+  try {
+    const resp = await axios.post(`${ip}/chat/anonymous/new`, {
+      userId,
+      chatId,
+    });
+    return { ok: true, data: resp.data };
+  } catch (err) {
+    return { ok: false, error: err.message };
   }
 };
 
@@ -33,22 +101,28 @@ const unsubscribeFromMessages = () => {
   socket.off("newMessage");
 };
 
-const getUserChats = async (userId) => {
-  try {
-    const resp = await axios.get(`${ip}/chat/${userId}`);
-    return { ok: true, data: resp.data };
-  } catch (error) {
-    console.log("❌ getUserChats error:", error.message);
-    return { ok: false, error: error.message };
-  }
+const subscribeToReveal = (callback) => {
+  socket.on("chatRevealed", callback);
+};
+
+const unsubscribeFromReveal = () => {
+  socket.off("chatRevealed");
 };
 
 export default {
   socket,
+  ip,
   createOrGetChat,
+  getUserChats,
+  startAnonymousChat,
+  requestReveal,
+  checkRevealStatus,
+  respondToReveal,
+  startNewAnonymousChat,
   joinChatRoom,
   sendMessage,
   subscribeToMessages,
   unsubscribeFromMessages,
-  getUserChats,
+  subscribeToReveal,
+  unsubscribeFromReveal,
 };

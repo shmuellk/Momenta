@@ -89,7 +89,7 @@ const updateProfileImage = async (userId, localImageUri) => {
       type: mimeType,
     });
 
-    const response = await axios.post(
+    const resp = await axios.post(
       `http://${ip}/users/updateProfileImage`,
       formData,
       {
@@ -99,9 +99,12 @@ const updateProfileImage = async (userId, localImageUri) => {
       }
     );
 
-    return { ok: true, data: response.data.user };
+    return { ok: true, data: resp.data };
   } catch (error) {
-    console.log("Error uploading image:", error.message);
+    console.log(
+      "Error updating profile image:",
+      error.response || error.message
+    );
     return { ok: false, error: error.response?.data?.error || error.message };
   }
 };

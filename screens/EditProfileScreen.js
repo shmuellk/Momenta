@@ -10,7 +10,6 @@ import {
 
 import Input_text from "../components/input"; // ✅ קומפוננטת אינפוט שלך
 import userModel from "../models/userModel"; // ✅ ודא שהנתיב נכון!
-import authModel from "../models/authModel";
 
 export default function EditProfileScreen({ route, navigation }) {
   const { userdata } = route.params;

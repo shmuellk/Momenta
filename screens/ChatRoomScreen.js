@@ -1,3 +1,4 @@
+// 🔹 ChatRoomScreen.js
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import {
   View,
@@ -12,78 +13,181 @@ import {
   SafeAreaView,
   Keyboard,
   TouchableWithoutFeedback,
+  Alert,
+  LayoutAnimation,
+  UIManager,
 } from "react-native";
+import { HeaderBackButton } from "@react-navigation/elements";
 import moment from "moment";
 import { useNavigation } from "@react-navigation/native";
 import chatModel from "../models/chatModel";
 
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 export default function ChatRoomScreen({ route }) {
-  const { myUserId, targetUser } = route.params;
-  const [chatId, setChatId] = useState(null);
+  const {
+    myUserId,
+    targetUser,
+    chatId: existingChatId,
+    isAnonymous = false,
+  } = route.params;
+
+  const [chatId, setChatId] = useState(existingChatId || null);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
+  const [revealed, setRevealed] = useState(!isAnonymous);
+  const [userDisplay, setUserDisplay] = useState(targetUser);
 
   const flatListRef = useRef(null);
   const navigation = useNavigation();
 
   useLayoutEffect(() => {
+    const imageSrc =
+      revealed && userDisplay?.profileImage
+        ? { uri: userDisplay.profileImage }
+        : require("../assets/defualt_profil.jpg");
+    const name = revealed ? userDisplay?.userName : "";
+
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     navigation.setOptions({
       headerTitle: () => (
         <View style={{ flexDirection: "row-reverse", alignItems: "center" }}>
           <Image
-            source={
-              targetUser.profileImage
-                ? { uri: targetUser.profileImage }
-                : require("../assets/defualt_profil.jpg")
-            }
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              marginLeft: 10,
-            }}
+            source={imageSrc}
+            style={{ width: 36, height: 36, borderRadius: 18, marginLeft: 10 }}
           />
-          <Text style={{ fontSize: 16, fontWeight: "600", color: "#333" }}>
-            {targetUser.userName}
-          </Text>
+          {name !== "" && (
+            <Text style={{ fontSize: 16, fontWeight: "600", color: "#333" }}>
+              {name}
+            </Text>
+          )}
         </View>
       ),
+      headerLeft: (props) =>
+        isAnonymous && !revealed ? (
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <HeaderBackButton {...props} onPress={() => navigation.goBack()} />
+            <View style={{ flexDirection: "row-reverse" }}>
+              <TouchableOpacity
+                onPress={handleReveal}
+                style={styles.revealButton}
+              >
+                <Text style={styles.revealText}>חשיפת משתמשים</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleStartNew}
+                style={styles.newChatButton}
+              >
+                <Text style={styles.newChatText}>שיחה חדשה</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : (
+          <HeaderBackButton {...props} onPress={() => navigation.goBack()} />
+        ),
     });
-  }, [navigation, targetUser]);
+  }, [revealed, userDisplay]);
 
   useEffect(() => {
     const init = async () => {
       const resp = await chatModel.createOrGetChat(myUserId, targetUser._id);
-      if (resp.ok) {
-        const chat = resp.data;
-        setChatId(chat._id);
-        setMessages(chat.messages || []);
-        chatModel.joinChatRoom(chat._id);
-      }
+      if (!resp.ok) return Alert.alert("שגיאה בטעינת הצ'אט");
+
+      const chat = resp.data;
+      setChatId(chat._id);
+      setMessages(chat.messages);
+      const other = chat.users.find((u) => u._id !== myUserId);
+      setUserDisplay(other);
+      if (!chat.isAnonymous) setRevealed(true);
+      chatModel.joinChatRoom(chat._id);
     };
 
     init();
-
-    chatModel.subscribeToMessages((msg) => {
-      setMessages((prev) => [...prev, msg]);
-    });
-
-    return () => {
-      chatModel.unsubscribeFromMessages();
-    };
+    const msgSub = (msg) => setMessages((prev) => [...prev, msg]);
+    chatModel.subscribeToMessages(msgSub);
+    return () => chatModel.unsubscribeFromMessages();
   }, []);
 
+  useEffect(() => {
+    if (!chatId || (!isAnonymous && revealed)) return;
+
+    const promptReveal = async () => {
+      const resp = await chatModel.checkRevealStatus(chatId, myUserId);
+      if (resp.ok && resp.data.shouldPrompt) {
+        Alert.alert(
+          "בקשת חשיפה",
+          "המשתמש השני ביקש לחשוף את זהותו. האם להפוך לחשוף?",
+          [
+            {
+              text: "לא",
+              style: "cancel",
+              onPress: async () =>
+                chatModel.respondToReveal(chatId, myUserId, false),
+            },
+            {
+              text: "כן",
+              onPress: async () => {
+                await chatModel.respondToReveal(chatId, myUserId, true);
+                const refresh = await chatModel.createOrGetChat(
+                  myUserId,
+                  userDisplay._id
+                );
+                if (refresh.ok && !refresh.data.isAnonymous) {
+                  setRevealed(true);
+                  const other = refresh.data.users.find(
+                    (u) => u._id !== myUserId
+                  );
+                  setUserDisplay(other);
+                  Alert.alert("נחשפתם זה לזה!");
+                }
+              },
+            },
+          ]
+        );
+      }
+    };
+
+    promptReveal();
+  }, [chatId]);
+
+  const handleReveal = async () => {
+    const resp = await chatModel.requestReveal(chatId, myUserId);
+    resp.ok
+      ? Alert.alert("בקשה נשלחה", "המשתמש השני יחליט אם לחשוף.")
+      : Alert.alert("שגיאה", resp.error);
+  };
+
+  const handleStartNew = async () => {
+    const resp = await chatModel.startNewAnonymousChat(myUserId, chatId);
+    if (resp.ok) {
+      const newChat = resp.data;
+      const partnerId = newChat.users.find((id) => id !== myUserId);
+      navigation.replace("ChatRoom", {
+        myUserId,
+        targetUser: { _id: partnerId, userName: "אנונימי", profileImage: null },
+        chatId: newChat._id,
+        isAnonymous: true,
+      });
+    } else {
+      Alert.alert("שגיאה", resp.error);
+    }
+  };
+
   const handleSend = () => {
-    if (!text.trim() || !chatId) return;
+    if (!text.trim()) return;
     chatModel.sendMessage({ roomId: chatId, senderId: myUserId, text });
     setText("");
   };
 
-  const renderItem = ({ item }) => {
-    const senderId = item.senderId || item.sender?._id || item.sender || null;
-    const isMe = senderId?.toString() === myUserId?.toString();
-    const time = item.createdAt ? moment(item.createdAt).format("HH:mm") : "";
-
+  const renderMessage = ({ item }) => {
+    const isMe = item.senderId === myUserId || item.sender?._id === myUserId;
+    const bubbleStyle = isMe ? styles.myBubble : styles.otherBubble;
     return (
       <View
         style={[
@@ -91,35 +195,27 @@ export default function ChatRoomScreen({ route }) {
           isMe ? styles.alignRight : styles.alignLeft,
         ]}
       >
-        <View
-          style={[styles.bubble, isMe ? styles.myBubble : styles.otherBubble]}
-        >
-          <View style={styles.bubbleRow}>
-            <Text
-              style={[
-                styles.messageText,
-                isMe ? styles.myText : styles.otherText,
-              ]}
-            >
-              {item.text}
-            </Text>
-            <Text style={styles.timeInline}>{time}</Text>
-          </View>
-          <View
+        <View style={[styles.bubble, bubbleStyle]}>
+          <Text
             style={[
-              styles.bubbleTail,
-              isMe ? styles.tailRight : styles.tailLeft,
+              styles.messageText,
+              isMe ? styles.myText : styles.otherText,
             ]}
-          />
+          >
+            {item.text}
+          </Text>
+          <Text style={styles.timeInline}>
+            {moment(item.createdAt).format("HH:mm")}
+          </Text>
         </View>
       </View>
     );
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#FAFAFA" }}>
+    <SafeAreaView style={styles.flex}>
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.flex}
         behavior="padding"
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 83}
       >
@@ -128,26 +224,22 @@ export default function ChatRoomScreen({ route }) {
             <FlatList
               ref={flatListRef}
               data={messages}
-              keyExtractor={(_, index) => index.toString()}
-              renderItem={renderItem}
+              renderItem={renderMessage}
+              keyExtractor={(_, i) => i.toString()}
               onContentSizeChange={() =>
                 flatListRef.current?.scrollToEnd({ animated: true })
               }
-              style={{ flex: 1 }}
             />
-
             <View style={styles.inputContainer}>
               <TextInput
+                style={styles.input}
+                placeholder="כתוב הודעה..."
                 value={text}
                 onChangeText={setText}
-                placeholder="כתוב הודעה..."
-                style={styles.input}
                 multiline
-                returnKeyType="default"
-                blurOnSubmit={false}
               />
-              <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
-                <Text style={{ color: "white" }}>שלח</Text>
+              <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+                <Text style={{ color: "#fff" }}>שלח</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -158,81 +250,26 @@ export default function ChatRoomScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1, backgroundColor: "#FAFAFA" },
   container: {
     flex: 1,
     paddingHorizontal: 10,
     justifyContent: "space-between",
   },
-  bubbleWrapper: {
-    maxWidth: "75%",
-    marginVertical: 4,
-    position: "relative",
-  },
-  alignLeft: {
-    alignSelf: "flex-start",
-  },
-  alignRight: {
-    alignSelf: "flex-end",
-  },
-  bubble: {
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingTop: 10,
-    paddingBottom: 10,
-    position: "relative",
-    backgroundColor: "#FFF",
-  },
-  myBubble: {
-    backgroundColor: "#7E57C2",
-    borderBottomRightRadius: 0,
-  },
-  otherBubble: {
-    backgroundColor: "#E6E6E6",
-    borderBottomLeftRadius: 0,
-  },
-  bubbleRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "flex-start",
-    flexWrap: "wrap",
-  },
-  messageText: {
-    fontSize: 16,
-    lineHeight: 22,
-    flexShrink: 1,
-  },
-  myText: {
-    color: "#fff",
-  },
-  otherText: {
-    color: "#000",
-  },
+  bubbleWrapper: { maxWidth: "75%", marginVertical: 4 },
+  alignLeft: { alignSelf: "flex-start" },
+  alignRight: { alignSelf: "flex-end" },
+  bubble: { padding: 8, borderRadius: 16, elevation: 2 },
+  myBubble: { backgroundColor: "#7E57C2", borderBottomRightRadius: 0 },
+  otherBubble: { backgroundColor: "#EEE", borderBottomLeftRadius: 0 },
+  messageText: { fontSize: 16, lineHeight: 22 },
+  myText: { color: "#fff" },
+  otherText: { color: "#333" },
   timeInline: {
     fontSize: 10,
     color: "#bbb",
-    marginLeft: 6,
     alignSelf: "flex-end",
-    minWidth: 36,
-    textAlign: "right",
-  },
-  bubbleTail: {
-    position: "absolute",
-    bottom: 0,
-    width: 0,
-    height: 0,
-    borderTopWidth: 10,
-    borderTopColor: "transparent",
-    borderBottomWidth: 10,
-  },
-  tailRight: {
-    right: -10,
-    borderLeftWidth: 10,
-    borderLeftColor: "#7E57C2",
-  },
-  tailLeft: {
-    left: -10,
-    borderRightWidth: 10,
-    borderRightColor: "#E6E6E6",
+    marginTop: 4,
   },
   inputContainer: {
     flexDirection: "row",
@@ -257,4 +294,21 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 24,
   },
+  revealButton: {
+    borderColor: "#7E57C2",
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginRight: 2,
+  },
+  revealText: { color: "#7E57C2", fontWeight: "bold" },
+  newChatButton: {
+    borderColor: "#C00",
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  newChatText: { color: "#C00", fontWeight: "bold" },
 });
