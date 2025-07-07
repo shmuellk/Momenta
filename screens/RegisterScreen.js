@@ -25,7 +25,7 @@ import authModel from "../models/authModel";
 
 const { width, height } = Dimensions.get("window");
 const STEPS = ["1", "2", "3", "4"];
-const COLORS = ["#B39DDB", "#9575CD", "#8A66C8", "#7E57C2"];
+const COLORS = ["#B39DDB", "#9575CD", "#7E57C2", "#5E35B1"];
 
 export default function RegistrationFlow({ navigation }) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -37,9 +37,9 @@ export default function RegistrationFlow({ navigation }) {
 
   const [userData, setUserData] = useState({
     fullname: "",
-    Username: "",
+    userName: "",
     imageProfile: "", // we’ll fill this in step 1
-    gander: "", // step 1
+    gender: "", // step 1
     Phone: "",
     email: "",
     password: "",
@@ -118,7 +118,7 @@ export default function RegistrationFlow({ navigation }) {
         code: number,
         email: userData.email,
       });
-      if (res) {
+      if (res?.ok) {
         setErrorModalMasseg("המשתמש נוצר בהצלחה!");
         setErrorModalVisible(true);
         setNuv(true);
@@ -157,6 +157,7 @@ export default function RegistrationFlow({ navigation }) {
           setErrorModalVisible(false);
           setErrorModalMasseg("");
           if (nuv) {
+            setNuv(false);
             navigation.navigate("LogInScreen");
           }
         }}
@@ -166,7 +167,9 @@ export default function RegistrationFlow({ navigation }) {
           activeOpacity={1}
           onPressOut={() => {
             setErrorModalVisible(false);
+            setErrorModalMasseg("");
             if (nuv) {
+              setNuv(false);
               navigation.navigate("LogInScreen");
             }
           }}
@@ -267,12 +270,19 @@ export default function RegistrationFlow({ navigation }) {
                 />
               )}
               {currentStep === 3 && (
-                <VerificationScreen
-                  onPress={(number) => handleVerify(number)}
-                  color={currentStepColor}
-                  text="בודק קוד"
-                  resend={handleResend}
-                />
+                <>
+                  <TouchableOpacity onPress={() => setCurrentStep(2)}>
+                    <Text style={{ color: "#8A66C8", marginTop: 10 }}>
+                      ↩ חזור להרשמה
+                    </Text>
+                  </TouchableOpacity>
+                  <VerificationScreen
+                    onPress={(number) => handleVerify(number)}
+                    color={currentStepColor}
+                    text="בודק קוד"
+                    resend={handleResend}
+                  />
+                </>
               )}
             </View>
           </View>

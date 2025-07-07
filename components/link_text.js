@@ -4,7 +4,7 @@ import React from "react";
 const Link_text = ({ text, color, onPress }) => {
   return (
     <TouchableOpacity onPress={onPress}>
-      <Text style={[styles.link, { color: color }]}>{text}</Text>
+      <Text style={[styles.link, { color: color || "#8E2DE2" }]}>{text}</Text>
     </TouchableOpacity>
   );
 };

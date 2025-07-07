@@ -10,17 +10,16 @@ const register = async (userData) => {
     formData.append("email", userData.email || "");
     formData.append("phone", userData.Phone || "");
     formData.append("password", userData.password || "");
-    formData.append("userName", userData.Username || "");
-    formData.append("gander", userData.gander || "");
+    formData.append("userName", userData.userName || "");
+    formData.append("gender", userData.gender || "");
 
     // If userData.imageProfile is a local URI, we need to extract filename & type
     // React Native’s fetch/axios FormData can accept an object like { uri, name, type }
-    if (userData.imageProfile) {
-      // Extract the file extension from the URI
+    if (userData.imageProfile && typeof userData.imageProfile === "string") {
       const uri = userData.imageProfile;
-      const filename = uri.split("/").pop();
+      const filename = uri.split("/").pop() || `photo.${Date.now()}.jpg`;
       const match = /\.(\w+)$/.exec(filename);
-      const mimeType = match ? `image/${match[1]}` : "image";
+      const mimeType = match ? `image/${match[1]}` : "image/jpeg";
 
       formData.append("imageProfile", {
         uri: Platform.OS === "ios" ? uri.replace("file://", "") : uri,
@@ -61,10 +60,10 @@ const resend = async (data) => {
     });
     console.log("resend : " + response.data);
 
-    return true;
+    return { ok: true, data: response.data };
   } catch (error) {
     console.log("Error during login request:", error);
-    return false;
+    return { ok: false, error: error.response?.data?.message || "שגיאת רשת" };
   }
 };
 
@@ -87,10 +86,10 @@ const verify = async (data) => {
     ) {
       return true;
     }
-    return false;
+    return { ok: true, data: response.data };
   } catch (error) {
     console.log("Error during login request:", error);
-    return false;
+    return { ok: false, error: error.response?.data?.message || "שגיאת רשת" };
   }
 };
 

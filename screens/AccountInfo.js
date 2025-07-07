@@ -7,27 +7,27 @@ const { width, height } = Dimensions.get("window");
 const AccountInfo = ({ text, onPress, color, handleChange, userData = {} }) => {
   const UsernameRef = useRef();
   const PhoneRef = useRef();
-
+  const isValidPhone = (val) => /^\d{10}$/.test(val);
   const [errors, setErrors] = useState({
     fullname: false,
-    Username: false,
+    userName: false,
     Phone: false,
   });
 
   const validateAndNext = () => {
     // always grab a string before trim
     const fullVal = (userData.fullname || "").trim();
-    const userVal = (userData.Username || "").trim();
+    const userVal = (userData.userName || "").trim();
     const phoneVal = (userData.Phone || "").trim();
 
     const newErr = {
       fullname: fullVal === "",
-      Username: userVal === "",
-      Phone: phoneVal.length !== 10,
+      userName: userVal === "",
+      Phone: !isValidPhone(phoneVal),
     };
     setErrors(newErr);
 
-    if (!newErr.fullname && !newErr.Username && !newErr.Phone) {
+    if (!newErr.fullname && !newErr.userName && !newErr.Phone) {
       onPress();
     }
   };
@@ -52,19 +52,19 @@ const AccountInfo = ({ text, onPress, color, handleChange, userData = {} }) => {
         )}
 
         <Input_text
-          placeholder="Username"
-          val={userData.Username || ""}
+          placeholder="userName"
+          val={userData.userName || ""}
           onChangeText={(val) => {
-            handleChange("Username", val);
+            handleChange("userName", val);
             if (val.trim() !== "")
-              setErrors((e) => ({ ...e, Username: false }));
+              setErrors((e) => ({ ...e, userName: false }));
           }}
           ref={UsernameRef}
           onSubmitEditing={() => PhoneRef.current?.focus()}
           returnKeyType="next"
           icon="user"
         />
-        {errors.Username && (
+        {errors.userName && (
           <Text style={styles.error}>יש למלא את שם המשתמש</Text>
         )}
 

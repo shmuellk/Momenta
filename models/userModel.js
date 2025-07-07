@@ -54,8 +54,9 @@ const updateUser = async (data) => {
     if (data.email) payload.email = data.email;
     if (data.phone) payload.phone = data.phone;
     if (data.password) payload.password = data.password;
-
-    console.log(payload);
+    if (Object.keys(payload).length === 1) {
+      return { ok: false, error: "אין מה לעדכן" };
+    }
 
     const resp = await axios.put(`http://${ip}/users/update`, payload);
 
@@ -109,14 +110,14 @@ const updateProfileImage = async (userId, localImageUri) => {
   }
 };
 
-const getUsersComplit = async (searchText) => {
+const getUsersComplete = async (searchText) => {
   try {
-    const resp = await axios.post(`http://${ip}/users/getUsersComplit`, {
-      data: searchText,
+    const resp = await axios.post(`http://${ip}/users/getUsersComplete`, {
+      searchText,
     });
     return resp.data;
   } catch (error) {
-    console.log("Error in getUsersComplit:", error.message);
+    console.log("Error in getUsersComplete:", error.message);
     return [];
   }
 };
@@ -126,5 +127,5 @@ export default {
   getUser,
   updateUser,
   updateProfileImage,
-  getUsersComplit,
+  getUsersComplete,
 };

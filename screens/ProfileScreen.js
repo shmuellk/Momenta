@@ -53,8 +53,8 @@ export default function ProfileScreen({ route, navigation }) {
 
   useFocusEffect(
     React.useCallback(() => {
-      fetchUserPosts();
-    }, [user])
+      if (user?._id) fetchUserPosts();
+    }, [user._id])
   );
 
   useEffect(() => {
@@ -135,8 +135,8 @@ export default function ProfileScreen({ route, navigation }) {
       const newProfileImage = res.data.user.profileImage;
       const updatedUser = { ...user, profileImage: newProfileImage };
       setUser(updatedUser);
+      await AsyncStorage.setItem("userData", JSON.stringify(updatedUser));
       navigation.setParams({ userdata: updatedUser });
-      fetchUserPosts();
     } else {
       Alert.alert("שגיאה", JSON.stringify(res.error));
     }
@@ -202,7 +202,10 @@ export default function ProfileScreen({ route, navigation }) {
         style={styles.logoutIcon}
         onPress={async () => {
           await AsyncStorage.removeItem("userData");
-          navigation.navigate("LogInScreen");
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "LogInScreen" }],
+          });
         }}
       >
         <Ionicons name="log-out-outline" size={28} color="#333" />

@@ -31,16 +31,25 @@ const LogInScreen = ({ navigation }) => {
   const LogIn = async () => {
     setLoding(true);
     try {
+      if (!email || !password) {
+        setError(true);
+        return;
+      }
       const userData = await userModel.login({ email, password });
       if (userData) {
+        setEmail("");
+        setPassword("");
         setError(false);
         navigation.navigate("MainScreen", userData);
       } else {
         setError(true);
       }
     } catch (error) {
-      console.log(error);
-      setError(true);
+      if (error.response?.status === 401) {
+        setError(true);
+      } else {
+        alert("שגיאת שרת, נסה מאוחר יותר");
+      }
     } finally {
       setLoding(false);
     }
@@ -89,7 +98,7 @@ const LogInScreen = ({ navigation }) => {
           </View>
           <View style={styles.logIn_btn}>
             <Acsess_btn
-              text="התחברות"
+              text={loding ? "טוען..." : "התחברות"}
               onPress={LogIn}
               color="#7E57C2"
               disabled={loding}

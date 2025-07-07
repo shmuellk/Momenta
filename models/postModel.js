@@ -3,7 +3,13 @@ import axios from "axios";
 
 const ip = "128.140.125.244:5001";
 
-const creatPost = async (formData) => {
+const getErrorMessage = (error) =>
+  error.response?.data?.message ||
+  error.response?.data?.error ||
+  error.message ||
+  "שגיאה לא ידועה";
+
+const createPost = async (formData) => {
   try {
     const resp = await axios.post(`http://${ip}/post`, formData, {
       headers: {
@@ -16,11 +22,8 @@ const creatPost = async (formData) => {
       data: resp.data,
     };
   } catch (error) {
-    console.log("🔴 Error during creatPost request:", error.message);
-    return {
-      ok: false,
-      error: error.response?.data || error.message,
-    };
+    console.log("🔴 Error during createPost request:", error.message);
+    return { ok: false, error: getErrorMessage(error) };
   }
 };
 
@@ -35,10 +38,7 @@ const getAllPosts = async (page = 1, limit = 5) => {
     };
   } catch (error) {
     console.log("Error during getAllPosts request:", error);
-    return {
-      ok: false,
-      error: error.response?.data || error.message,
-    };
+    return { ok: false, error: getErrorMessage(error) };
   }
 };
 
@@ -50,7 +50,7 @@ const likePost = async (postId, userId) => {
     return { ok: resp.status >= 200 && resp.status < 300, data: resp.data };
   } catch (error) {
     console.log("Error during likePost request:", error);
-    return { ok: false, error: error.response?.data || error.message };
+    return { ok: false, error: getErrorMessage(error) };
   }
 };
 
@@ -63,7 +63,7 @@ const addComment = async (postId, userId, text) => {
     return { ok: resp.status >= 200 && resp.status < 300, data: resp.data };
   } catch (error) {
     console.log("Error during addComment request:", error);
-    return { ok: false, error: error.response?.data || error.message };
+    return { ok: false, error: getErrorMessage(error) };
   }
 };
 
@@ -76,14 +76,11 @@ const getPostsByUserId = async (userId) => {
     };
   } catch (error) {
     console.log("Error during getPostsByUserId request:", error);
-    return {
-      ok: false,
-      error: error.response?.data || error.message,
-    };
+    return { ok: false, error: getErrorMessage(error) };
   }
 };
 export default {
-  creatPost,
+  createPost,
   getAllPosts,
   likePost,
   addComment,

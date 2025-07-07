@@ -2,7 +2,10 @@ import axios from "axios";
 import { io } from "socket.io-client";
 
 const ip = "http://128.140.125.244:5001";
-const socket = io(ip);
+let socket;
+if (!socket) {
+  socket = io(ip);
+}
 
 const createOrGetChat = async (myUserId, targetUserId) => {
   try {

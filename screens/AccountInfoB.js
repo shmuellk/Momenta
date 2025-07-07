@@ -1,5 +1,5 @@
 // AccountInfoB.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -24,11 +24,18 @@ const AccountInfoB = ({
   handleChange,
   userData = {},
 }) => {
-  const [errors, setErrors] = useState({ gander: false, imageProfile: false });
+  const [errors, setErrors] = useState({ gender: false, imageProfile: false });
   const [localImageUri, setLocalImageUri] = useState(
     userData.imageProfile || ""
   );
   const [modalVisible, setModalVisible] = useState(false);
+
+  useEffect(() => {
+    if (Platform.OS !== "web") {
+      ImagePicker.requestCameraPermissionsAsync();
+      ImagePicker.requestMediaLibraryPermissionsAsync();
+    }
+  }, []);
 
   const pickFromLibrary = async () => {
     setModalVisible(false);
@@ -41,10 +48,11 @@ const AccountInfoB = ({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
     });
-    if (!result.canceled) {
+    if (!result.canceled && result.assets?.[0]?.uri) {
       const uri = result.assets[0].uri;
       setLocalImageUri(uri);
       handleChange("imageProfile", uri);
+      setErrors((e) => ({ ...e, imageProfile: false })); // ✅ כאן השיפור
     }
   };
 
@@ -58,20 +66,21 @@ const AccountInfoB = ({
     const result = await ImagePicker.launchCameraAsync({
       quality: 0.8,
     });
-    if (!result.canceled) {
+    if (!result.canceled && result.assets?.[0]?.uri) {
       const uri = result.assets[0].uri;
       setLocalImageUri(uri);
       handleChange("imageProfile", uri);
+      setErrors((e) => ({ ...e, imageProfile: false })); // ✅ כאן השיפור
     }
   };
 
   const validateAndNext = () => {
     const newErr = {
-      gander: (userData.gander || "").trim() === "",
+      gender: (userData.gender || "").trim() === "",
       imageProfile: !localImageUri,
     };
     setErrors(newErr);
-    if (!newErr.gander && !newErr.imageProfile) {
+    if (!newErr.gender && !newErr.imageProfile) {
       onPress();
     }
   };
@@ -104,14 +113,14 @@ const AccountInfoB = ({
             key={g}
             style={[
               styles.genderButton,
-              userData.gander === g && styles.genderButtonActive,
+              userData.gender === g && styles.genderButtonActive,
             ]}
-            onPress={() => handleChange("gander", g)}
+            onPress={() => handleChange("gender", g)}
           >
             <Text
               style={[
                 styles.genderText,
-                userData.gander === g && styles.genderTextActive,
+                userData.gender === g && styles.genderTextActive,
               ]}
             >
               {g}
@@ -119,7 +128,7 @@ const AccountInfoB = ({
           </TouchableOpacity>
         ))}
       </View>
-      {errors.gander && <Text style={styles.errorText}>אנא בחר מין</Text>}
+      {errors.gender && <Text style={styles.errorText}>אנא בחר מין</Text>}
 
       <View style={styles.nextButton}>
         <Acsess_btn text={text} color={color} onPress={validateAndNext} />

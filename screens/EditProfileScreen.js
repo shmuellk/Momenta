@@ -33,6 +33,21 @@ export default function EditProfileScreen({ route, navigation }) {
       return;
     }
 
+    if (!userName.trim() || !email.trim() || !phone.trim()) {
+      Alert.alert("שגיאה", "אנא מלא את כל השדות החובה.");
+      return;
+    }
+
+    if (!/^\d{10}$/.test(phone)) {
+      Alert.alert("שגיאה", "מספר טלפון לא תקין (10 ספרות נדרשות).");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      Alert.alert("שגיאה", "כתובת אימייל לא תקינה.");
+      return;
+    }
+
     setLoading(true);
 
     const res = await userModel.updateUser({
@@ -49,7 +64,8 @@ export default function EditProfileScreen({ route, navigation }) {
       const resGet = await userModel.getUser(userdata._id);
 
       setLoading(false);
-
+      setPassword("");
+      setRePassword("");
       if (resGet) {
         // ✅ חזור למסך פרופיל עם הנתונים המעודכנים
         navigation.navigate("ProfileMain", { userdata: resGet });

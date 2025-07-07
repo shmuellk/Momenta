@@ -11,7 +11,7 @@ const PrevLog = ({ navigation }) => {
       const user = await AsyncStorage.getItem("userData");
       if (user) {
         const parsedUser = JSON.parse(user);
-        navigation.navigate("MainScreen", parsedUser);
+        navigation.navigate("MainScreen", { userdata: parsedUser });
       } else {
         navigation.navigate("LogInScreen");
       }

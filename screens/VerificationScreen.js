@@ -51,8 +51,11 @@ export default function VerificationScreen({ onPress, resend }) {
 
   // Manual submit fallback
   const handleSubmit = () => {
-    const number = codes.reduce((acc, d) => acc * 10 + parseInt(d, 10), 0);
-    onPress(number);
+    const isValid = codes.every((c) => /^\d$/.test(c));
+    if (isValid) {
+      const number = codes.reduce((acc, d) => acc * 10 + parseInt(d, 10), 0);
+      onPress(number);
+    }
   };
 
   return (

@@ -33,6 +33,7 @@ const Input_code = forwardRef(
           onBlur={() => setFocus(false)}
           maxLength={1}
           selectTextOnFocus={true}
+          textContentType="oneTimeCode"
           keyboardType="number-pad"
           enterKeyHint={KeyHint}
           onSubmitEditing={onSubmitEditing}

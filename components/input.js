@@ -97,7 +97,7 @@ const Input_text = React.forwardRef(
 
         {error && (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>required</Text>
+            <Text style={styles.errorText}>שדה זה הוא שדה חובה</Text>
           </View>
         )}
       </View>
