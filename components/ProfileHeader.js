@@ -7,14 +7,7 @@ export default function ProfileHeader({ profileImage, userName, pickImage }) {
   return (
     <View style={styles.profileSection}>
       <View style={styles.profileImageWrapper}>
-        <Image
-          source={
-            profileImage
-              ? { uri: profileImage }
-              : require("../assets/defualt_profil.jpg")
-          }
-          style={styles.profileImage}
-        />
+        <Image source={profileImage} style={styles.profileImage} />
         <TouchableOpacity style={styles.editIcon} onPress={pickImage}>
           <Ionicons name="pencil" size={18} color="#fff" />
         </TouchableOpacity>

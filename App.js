@@ -1,4 +1,5 @@
 import { StatusBar } from "expo-status-bar";
+import { StyleSheet, Text, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import PrevLog from "./screens/PrevLog";
@@ -7,9 +8,9 @@ import VerificationScreen from "./screens/VerificationScreen";
 import MainScreen from "./screens/MainScreen";
 import RegisterScreen from "./screens/RegisterScreen";
 
-const Stack = createNativeStackNavigator();
-
 export default function App() {
+  const Stack = createNativeStackNavigator();
+
   return (
     <NavigationContainer>
       <StatusBar translucent style="dark" />
@@ -29,3 +30,12 @@ export default function App() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});

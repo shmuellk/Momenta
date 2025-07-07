@@ -35,34 +35,24 @@ export default function PostsScreen({ navigation, route }) {
     ? { uri: userdata.profileImage }
     : require("../assets/defualt_profil.jpg");
 
-  const fetchPosts = (() => {
-    let isActive = true;
-    return async (pageNumber) => {
-      if (loading || !hasMore) return;
-
-      setLoading(true);
-      isActive = true;
-
-      const res = await postModel.getAllPosts(pageNumber, 5);
-      if (!isActive) return;
-
-      if (res.ok) {
-        const newPosts = res.data.posts;
-        setPostsList((prev) => {
-          const allPosts = pageNumber === 1 ? newPosts : [...prev, ...newPosts];
-          const map = new Map();
-          allPosts.forEach((p) => map.set(String(p._id), p));
-          return Array.from(map.values());
-        });
-
-        if (newPosts.length < 5) setHasMore(false);
-      } else {
-        Alert.alert("שגיאה", res.error || "שגיאה בטעינת פוסטים");
-      }
-
-      setLoading(false);
-    };
-  })();
+  const fetchPosts = async (pageNumber) => {
+    if (loading || !hasMore) return;
+    setLoading(true);
+    const res = await postModel.getAllPosts(pageNumber, 5);
+    if (res.ok) {
+      const newPosts = res.data.posts;
+      setPostsList((prev) => {
+        const allPosts = pageNumber === 1 ? newPosts : [...prev, ...newPosts];
+        const map = new Map();
+        allPosts.forEach((p) => map.set(String(p._id), p));
+        return Array.from(map.values());
+      });
+      if (newPosts.length < 5) setHasMore(false);
+    } else {
+      Alert.alert("שגיאה", res.error || "שגיאה בטעינת פוסטים");
+    }
+    setLoading(false);
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -103,13 +93,12 @@ export default function PostsScreen({ navigation, route }) {
     if (postsList.length > 0) fetchMissingUsers();
   }, [postsList]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = () => {
     setRefreshing(true);
     setHasMore(true);
     setPage(1);
-    await fetchPosts(1);
-    flatListRef.current?.scrollToOffset({ animated: true, offset: 0 });
     setRefreshing(false);
+    flatListRef.current?.scrollToOffset({ animated: true, offset: 0 });
   };
 
   const handleLoadMore = () => {

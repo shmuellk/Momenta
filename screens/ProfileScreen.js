@@ -53,8 +53,8 @@ export default function ProfileScreen({ route, navigation }) {
 
   useFocusEffect(
     React.useCallback(() => {
-      if (user?._id) fetchUserPosts();
-    }, [user._id])
+      fetchUserPosts();
+    }, [user])
   );
 
   useEffect(() => {
@@ -135,8 +135,8 @@ export default function ProfileScreen({ route, navigation }) {
       const newProfileImage = res.data.user.profileImage;
       const updatedUser = { ...user, profileImage: newProfileImage };
       setUser(updatedUser);
-      await AsyncStorage.setItem("userData", JSON.stringify(updatedUser));
       navigation.setParams({ userdata: updatedUser });
+      fetchUserPosts();
     } else {
       Alert.alert("שגיאה", JSON.stringify(res.error));
     }

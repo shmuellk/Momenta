@@ -1,4 +1,5 @@
 import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -50,9 +51,7 @@ function ChatsStack({ route }) {
 export default function App({ route }) {
   return (
     <Tab.Navigator
-      lazy
       screenOptions={({ route }) => ({
-        unmountOnBlur: true,
         tabBarIcon: ({ color, size }) => {
           let iconName;
 

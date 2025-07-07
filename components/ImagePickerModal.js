@@ -1,13 +1,6 @@
 // components/ImagePickerModal.js
 import React from "react";
-import {
-  Modal,
-  TouchableOpacity,
-  View,
-  Text,
-  StyleSheet,
-  TouchableWithoutFeedback,
-} from "react-native";
+import { Modal, TouchableOpacity, View, Text, StyleSheet } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 export default function ImagePickerModal({
@@ -28,50 +21,47 @@ export default function ImagePickerModal({
         activeOpacity={1}
         onPressOut={onClose}
       >
-        <TouchableWithoutFeedback>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>בחר מקור תמונה</Text>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>בחר מקור תמונה</Text>
 
-            <TouchableOpacity
-              style={styles.modalOption}
-              onPress={onPickFromLibrary}
-              accessibilityLabel="בחר תמונה מהגלריה"
-            >
-              <Ionicons
-                name="image-outline"
-                size={26}
-                color="#7E57C2"
-                style={styles.optionIcon}
-              />
-              <Text style={styles.modalOptionText}>גלריה</Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.modalOption}
+            onPress={onPickFromLibrary}
+          >
+            <Ionicons
+              name="image-outline"
+              size={26}
+              color="#7E57C2"
+              style={styles.optionIcon}
+            />
+            <Text style={styles.modalOptionText}>גלריה</Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity style={styles.modalOption} onPress={onTakePhoto}>
-              <Ionicons
-                name="camera-outline"
-                size={26}
-                color="#7E57C2"
-                style={styles.optionIcon}
-              />
-              <Text style={styles.modalOptionText}>מצלמה</Text>
-            </TouchableOpacity>
+          <TouchableOpacity style={styles.modalOption} onPress={onTakePhoto}>
+            <Ionicons
+              name="camera-outline"
+              size={26}
+              color="#7E57C2"
+              style={styles.optionIcon}
+            />
+            <Text style={styles.modalOptionText}>מצלמה</Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.modalOption, styles.cancelOption]}
-              onPress={onClose}
-            >
-              <Ionicons
-                name="close-circle-outline"
-                size={26}
-                color="#E53935"
-                style={styles.optionIcon}
-              />
-              <Text style={[styles.modalOptionText, { color: "#E53935" }]}>
-                ביטול
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableWithoutFeedback>
+          <TouchableOpacity
+            style={[styles.modalOption, styles.cancelOption]}
+            onPress={onClose}
+          >
+            <Ionicons
+              name="close-circle-outline"
+              size={26}
+              color="#E53935"
+              style={styles.optionIcon}
+            />
+            <Text style={[styles.modalOptionText, { color: "#E53935" }]}>
+              ביטול
+            </Text>
+          </TouchableOpacity>
+        </View>
       </TouchableOpacity>
     </Modal>
   );

@@ -96,11 +96,6 @@ export default function ChatRoomScreen({ route }) {
 
   useEffect(() => {
     const init = async () => {
-      if (chatId) {
-        chatModel.joinChatRoom(chatId);
-        return;
-      }
-
       const resp = await chatModel.createOrGetChat(myUserId, targetUser._id);
       if (!resp.ok) return Alert.alert("שגיאה בטעינת הצ'אט");
 
@@ -110,7 +105,6 @@ export default function ChatRoomScreen({ route }) {
       const other = chat.users.find((u) => u._id !== myUserId);
       setUserDisplay(other);
       if (!chat.isAnonymous) setRevealed(true);
-
       chatModel.joinChatRoom(chat._id);
     };
 
@@ -189,9 +183,6 @@ export default function ChatRoomScreen({ route }) {
     if (!text.trim()) return;
     chatModel.sendMessage({ roomId: chatId, senderId: myUserId, text });
     setText("");
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
   };
 
   const renderMessage = ({ item }) => {
@@ -234,12 +225,9 @@ export default function ChatRoomScreen({ route }) {
               ref={flatListRef}
               data={messages}
               renderItem={renderMessage}
-              keyExtractor={(item) => item._id || item.id || i.toString()}
+              keyExtractor={(_, i) => i.toString()}
               onContentSizeChange={() =>
                 flatListRef.current?.scrollToEnd({ animated: true })
-              }
-              onLayout={() =>
-                flatListRef.current?.scrollToEnd({ animated: false })
               }
             />
             <View style={styles.inputContainer}>

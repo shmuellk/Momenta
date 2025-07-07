@@ -3,6 +3,8 @@ const ip = "128.140.125.244:5001";
 import { Platform } from "react-native";
 
 const register = async (userData) => {
+  console.log("in");
+
   try {
     // Build a FormData object
     const formData = new FormData();
@@ -10,16 +12,17 @@ const register = async (userData) => {
     formData.append("email", userData.email || "");
     formData.append("phone", userData.Phone || "");
     formData.append("password", userData.password || "");
-    formData.append("userName", userData.userName || "");
+    formData.append("userName", userData.Username || "");
     formData.append("gender", userData.gender || "");
 
     // If userData.imageProfile is a local URI, we need to extract filename & type
     // React Native’s fetch/axios FormData can accept an object like { uri, name, type }
-    if (userData.imageProfile && typeof userData.imageProfile === "string") {
+    if (userData.imageProfile) {
+      // Extract the file extension from the URI
       const uri = userData.imageProfile;
-      const filename = uri.split("/").pop() || `photo.${Date.now()}.jpg`;
+      const filename = uri.split("/").pop();
       const match = /\.(\w+)$/.exec(filename);
-      const mimeType = match ? `image/${match[1]}` : "image/jpeg";
+      const mimeType = match ? `image/${match[1]}` : "image";
 
       formData.append("imageProfile", {
         uri: Platform.OS === "ios" ? uri.replace("file://", "") : uri,
@@ -60,10 +63,10 @@ const resend = async (data) => {
     });
     console.log("resend : " + response.data);
 
-    return { ok: true, data: response.data };
+    return true;
   } catch (error) {
     console.log("Error during login request:", error);
-    return { ok: false, error: error.response?.data?.message || "שגיאת רשת" };
+    return false;
   }
 };
 
@@ -86,10 +89,10 @@ const verify = async (data) => {
     ) {
       return true;
     }
-    return { ok: true, data: response.data };
+    return false;
   } catch (error) {
     console.log("Error during login request:", error);
-    return { ok: false, error: error.response?.data?.message || "שגיאת רשת" };
+    return false;
   }
 };
 

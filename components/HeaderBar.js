@@ -6,15 +6,8 @@ import { AntDesign } from "@expo/vector-icons";
 export default function HeaderBar({ profileImage, userName, onPlusPress }) {
   return (
     <View style={styles.header}>
-      <Image
-        source={
-          profileImage
-            ? { uri: profileImage }
-            : require("../assets/defualt_profil.jpg")
-        }
-        style={styles.profileImage}
-      />
-      <Text style={styles.welcomeText}>ברוך הבא {userName || "משתמש"}</Text>
+      <Image source={profileImage} style={styles.profileImage} />
+      <Text style={styles.welcomeText}>ברוך הבא {userName}</Text>
       <TouchableOpacity style={styles.plusButton} onPress={onPlusPress}>
         <AntDesign name="pluscircle" size={30} color="#8E2DE2" />
       </TouchableOpacity>
@@ -43,8 +36,5 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
   },
-  plusButton: {
-    padding: 5,
-    marginLeft: 10,
-  },
+  plusButton: { padding: 5 },
 });

@@ -75,32 +75,16 @@ export default function ChatsScreen({ route }) {
 
   const handleSearch = async (text) => {
     setLoading(true);
-    const response = await userModel.getUsersComplete(text);
-    const filtered = response.filter((u) => u._id !== currentUser._id);
-    setSearchResults(filtered);
+    const response = await userModel.getUsersComplit(text);
+    setSearchResults(response);
     setLoading(false);
   };
 
   const onUserPress = (user) => {
-    const existing = existingChats.find((chat) =>
-      chat.users.some((u) => u._id === user._id)
-    );
-
-    if (existing) {
-      // 🔁 אם קיים צ'אט – נווט אליו עם ה־chatId
-      navigation.navigate("ChatRoom", {
-        myUserId: currentUser._id,
-        targetUser: user,
-        chatId: existing._id,
-        isAnonymous: false,
-      });
-    } else {
-      // 🆕 אחרת פתח שיחה חדשה
-      navigation.navigate("ChatRoom", {
-        myUserId: currentUser._id,
-        targetUser: user,
-      });
-    }
+    navigation.navigate("ChatRoom", {
+      myUserId: currentUser._id,
+      targetUser: user,
+    });
   };
 
   const onAnonymousPress = async () => {
@@ -144,7 +128,7 @@ export default function ChatsScreen({ route }) {
             )}
           </View>
           <View style={styles.chatInfo}>
-            <Text style={styles.userName}>{item.userName}</Text>
+            <Text style={styles.username}>{item.userName}</Text>
             <Text style={styles.lastMessage}>התחל שיחה</Text>
           </View>
         </View>
@@ -189,7 +173,7 @@ export default function ChatsScreen({ route }) {
             )}
           </View>
           <View style={styles.chatInfo}>
-            <Text style={styles.userName}>
+            <Text style={styles.username}>
               {isAnon ? "אנונימי" : targetUser.userName}
             </Text>
             <Text style={styles.lastMessage} numberOfLines={1}>
@@ -238,7 +222,6 @@ export default function ChatsScreen({ route }) {
                 data={searchResults}
                 keyExtractor={(i) => i._id}
                 renderItem={renderUserItem}
-                initialNumToRender={10}
               />
             </>
           )
@@ -249,7 +232,6 @@ export default function ChatsScreen({ route }) {
               data={existingChats}
               keyExtractor={(i) => i._id}
               renderItem={renderChatItem}
-              initialNumToRender={10}
             />
           </>
         )}
@@ -320,7 +302,7 @@ const styles = StyleSheet.create({
   },
   avatarImage: { width: 48, height: 48, borderRadius: 24 },
   chatInfo: { flex: 1, marginHorizontal: 10 },
-  userName: {
+  username: {
     fontSize: 16,
     fontWeight: "600",
     color: "#333",

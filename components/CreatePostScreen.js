@@ -9,9 +9,6 @@ import {
   Dimensions,
   TouchableOpacity,
   Platform,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
-  Keyboard,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import ImagePickerModal from "../components/ImagePickerModal";
@@ -26,15 +23,9 @@ export default function CreatePostScreen({ navigation, route, popup }) {
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleImagePicked = async (uri) => {
-    if (!text.trim()) {
-      Alert.alert("שגיאה", "אנא כתוב טקסט לפני העלאת פוסט.");
-      return;
-    }
-    if (!uri) {
-      Alert.alert("שגיאה", "יש לבחור תמונה כדי להעלות פוסט.");
-      return;
-    }
     try {
+      if (!uri) return;
+
       const filename = uri.split("/").pop();
       const match = /\.(\w+)$/.exec(filename);
       const type = match ? `image/${match[1]}` : "image";
@@ -50,14 +41,13 @@ export default function CreatePostScreen({ navigation, route, popup }) {
 
       setUploading(true);
 
-      const resp = await postModel.createPost(formData);
+      const resp = await postModel.creatPost(formData);
       if (!resp.ok) throw new Error(resp.error || "Upload failed");
 
       Alert.alert("✅ סיום!", "התמונה והטקסט נשמרו בהצלחה.", [
         {
           text: "אוקיי",
           onPress: () => {
-            setText(""); // ניקוי טקסט אחרי שליחה
             popup(false);
           },
         },
@@ -78,7 +68,7 @@ export default function CreatePostScreen({ navigation, route, popup }) {
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
       quality: 0.8,
     });
     if (!result.canceled) {
@@ -94,7 +84,6 @@ export default function CreatePostScreen({ navigation, route, popup }) {
       return;
     }
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
     });
     if (!result.canceled) {
@@ -103,48 +92,43 @@ export default function CreatePostScreen({ navigation, route, popup }) {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.screenContainer}
-      >
-        <View style={styles.card}>
-          <Text style={styles.title}>כתוב טקסט לפוסט:</Text>
+    <View style={styles.screenContainer}>
+      <View style={styles.card}>
+        <Text style={styles.title}>כתוב טקסט לפוסט:</Text>
 
-          <TextInput
-            value={text}
-            onChangeText={setText}
-            placeholder="להוסיף תיאור או כיתוב..."
-            placeholderTextColor="#999"
-            style={styles.textInput}
-            multiline
-            numberOfLines={4}
-          />
-
-          {uploading ? (
-            <ActivityIndicator
-              size="large"
-              color="#1E90FF"
-              style={styles.loader}
-            />
-          ) : (
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => setModalVisible(true)}
-            >
-              <Text style={styles.buttonText}>בחר תמונה והעלה פוסט</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <ImagePickerModal
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-          onPickFromLibrary={handlePickFromLibrary}
-          onTakePhoto={handleTakePhoto}
+        <TextInput
+          value={text}
+          onChangeText={setText}
+          placeholder="להוסיף תיאור או כיתוב..."
+          placeholderTextColor="#999"
+          style={styles.textInput}
+          multiline
+          numberOfLines={4}
         />
-      </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
+
+        {uploading ? (
+          <ActivityIndicator
+            size="large"
+            color="#1E90FF"
+            style={styles.loader}
+          />
+        ) : (
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => setModalVisible(true)}
+          >
+            <Text style={styles.buttonText}>בחר תמונה והעלה פוסט</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <ImagePickerModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onPickFromLibrary={handlePickFromLibrary}
+        onTakePhoto={handleTakePhoto}
+      />
+    </View>
   );
 }
 

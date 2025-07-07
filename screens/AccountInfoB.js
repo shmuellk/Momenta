@@ -1,5 +1,5 @@
 // AccountInfoB.js
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -30,13 +30,6 @@ const AccountInfoB = ({
   );
   const [modalVisible, setModalVisible] = useState(false);
 
-  useEffect(() => {
-    if (Platform.OS !== "web") {
-      ImagePicker.requestCameraPermissionsAsync();
-      ImagePicker.requestMediaLibraryPermissionsAsync();
-    }
-  }, []);
-
   const pickFromLibrary = async () => {
     setModalVisible(false);
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -48,11 +41,10 @@ const AccountInfoB = ({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
     });
-    if (!result.canceled && result.assets?.[0]?.uri) {
+    if (!result.canceled) {
       const uri = result.assets[0].uri;
       setLocalImageUri(uri);
       handleChange("imageProfile", uri);
-      setErrors((e) => ({ ...e, imageProfile: false })); // ✅ כאן השיפור
     }
   };
 
@@ -66,11 +58,10 @@ const AccountInfoB = ({
     const result = await ImagePicker.launchCameraAsync({
       quality: 0.8,
     });
-    if (!result.canceled && result.assets?.[0]?.uri) {
+    if (!result.canceled) {
       const uri = result.assets[0].uri;
       setLocalImageUri(uri);
       handleChange("imageProfile", uri);
-      setErrors((e) => ({ ...e, imageProfile: false })); // ✅ כאן השיפור
     }
   };
 

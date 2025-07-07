@@ -1,3 +1,8 @@
+// components/PostCard.js
+import React from "react";
+import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
+
 export default function PostCard({
   post,
   isLiked,
@@ -6,11 +11,6 @@ export default function PostCard({
   handleLike,
   onCommentPress,
 }) {
-  const textAlign = getTextAlign(post.text);
-
-  const formatNumber = (n) =>
-    n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") + "K" : n;
-
   return (
     <View style={styles.postCard}>
       <View style={styles.postHeader}>
@@ -25,17 +25,17 @@ export default function PostCard({
         <Text style={styles.uploaderName}>{uploader.userName || "משתמש"}</Text>
       </View>
 
-      {post.imageUrl ? (
-        <Image source={{ uri: post.imageUrl }} style={styles.postImage} />
-      ) : null}
+      <Image source={{ uri: post.imageUrl }} style={styles.postImage} />
 
       <Text
         style={[
           styles.postText,
           {
-            textAlign,
-            writingDirection: textAlign === "right" ? "rtl" : "ltr",
-            alignSelf: textAlign === "right" ? "flex-end" : "flex-start",
+            textAlign: getTextAlign(post.text),
+            writingDirection:
+              getTextAlign(post.text) === "right" ? "rtl" : "ltr",
+            alignSelf:
+              getTextAlign(post.text) === "right" ? "flex-end" : "flex-start",
           },
         ]}
       >
@@ -52,7 +52,7 @@ export default function PostCard({
             size={24}
             color={isLiked ? "#8E2DE2" : "#999"}
           />
-          <Text style={styles.actionText}>{formatNumber(post.likes)}</Text>
+          <Text style={styles.actionText}>{post.likes}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -60,11 +60,64 @@ export default function PostCard({
           onPress={() => onCommentPress(post._id)}
         >
           <FontAwesome name="comment-o" size={24} color="#8E2DE2" />
-          <Text style={styles.actionText}>
-            {formatNumber(post.comments.length)}
-          </Text>
+          <Text style={styles.actionText}>{post.comments.length}</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  postCard: {
+    marginBottom: 20,
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: "#f9f9f9",
+    elevation: 2,
+  },
+  postHeader: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    padding: 12,
+    backgroundColor: "#fff",
+  },
+  uploaderImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#8E2DE2",
+    marginLeft: 10,
+  },
+  uploaderName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  postImage: {
+    width: "100%",
+    height: 200,
+  },
+  postText: {
+    padding: 12,
+    fontSize: 16,
+    color: "#333",
+  },
+  postActions: {
+    flexDirection: "row-reverse",
+    justifyContent: "space-around",
+    paddingVertical: 10,
+    backgroundColor: "#fff",
+    borderTopWidth: 1,
+    borderColor: "#eee",
+  },
+  actionButton: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+  },
+  actionText: {
+    marginHorizontal: 6,
+    fontSize: 16,
+    color: "#8E2DE2",
+  },
+});
